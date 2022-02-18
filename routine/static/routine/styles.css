@@ -1,0 +1,11 @@
+.embed-responsive-item {
+    height: fit-content;
+    max-height: 300px;
+    max-width: 100%;
+}
+
+.img-fluid {
+    max-height: 300px;
+    height: fit-content;
+    width: fit-content;
+}

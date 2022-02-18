@@ -1,0 +1,28 @@
+{% extends "routine/layout.html" %}
+
+{% block body %}
+    <h1 class="text-center">Select Your Exercise</h1>
+    {% for exercise in exercises %}
+        <h2 class="text-center">{{exercise.name}}</h2>
+        <div class="row">
+            <div class="col-6 text-center embed-responsive">
+                <img src="{{exercise.imagen.url}}" class="img-fluid img-thumbnail embed-responsive-item" alt="Foto">
+            </div>
+            <div class="col-6 text-center embed-responsive embed-responsive-1by1">
+                <video class="embed-responsive-item" controls="controls" >
+                    <source src="{{exercise.video.url}}" type="video/mp4" />
+                </video>
+            </div>
+        </div>
+        <p>{{exercise.description}}</p>
+        <p>{{exercise.primary_muscle}}</p>
+        <p>{{exercise.secondary_muscle}}</p>
+        <p>{{exercise.video}}</p>
+        {% empty %}
+    <p>No hay nada aún</p>
+    {% endfor %}
+{% endblock %}
+    
+{% block script %}
+    {% csrf_token %}
+{% endblock %}
