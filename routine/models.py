@@ -24,3 +24,14 @@ class Exercise(models.Model):
     def __str__(self):
         return f"{self.name}"
 
+    def serialize(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "description": self.description,
+            "primary_muscles": [muscle.name for muscle in self.primary_muscles.all()],
+            "secondary_muscles": [muscle.name for muscle in self.secondary_muscles.all()],
+            "imagen": self.imagen.url,
+            "video": self.video.url,
+            "register_date": self.register_date
+        } 

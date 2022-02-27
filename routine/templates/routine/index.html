@@ -1,28 +1,66 @@
 {% extends "routine/layout.html" %}
+{% load static %}
 
 {% block body %}
-    <h1 class="text-center">Select Your Exercise</h1>
-    {% for exercise in exercises %}
-        <h2 class="text-center">{{exercise.name}}</h2>
-        <div class="row">
-            <div class="col-6 text-center embed-responsive">
-                <img src="{{exercise.imagen.url}}" class="img-fluid img-thumbnail embed-responsive-item" alt="Foto">
-            </div>
-            <div class="col-6 text-center embed-responsive embed-responsive-1by1">
-                <video class="embed-responsive-item" controls="controls" >
-                    <source src="{{exercise.video.url}}" type="video/mp4" />
-                </video>
-            </div>
+    <div class="container-fluid">
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark m-3 p-3">
+            <button type="button" id="index" class="navbar-brand btn btn-outline-light">CaliRoad</button>
+            <button type="button" id="exercise" class="navbar-brand btn btn-outline-light">Exercises</button>
+            {% if user.is_authenticated %}
+                <button type="button" id="my_routine" class="navbar-brand btn btn-outline-light">My Routine</button>
+                <button type="button" id="results" class="navbar-brand btn btn-outline-light">Results</button>
+                <button type="button" id="others" class="navbar-brand btn btn-outline-light">Others Routine</button>
+                <a role="button" aria-pressed="true" id="logout" class="navbar-brand btn btn-outline-light" href="{% url 'logout' %}">Logout</a>
+            {% else %}
+                <a role="button" aria-pressed="true" id="login" class="navbar-brand btn btn-outline-light" href="{% url 'login' %}">Login</a>
+                <a role="button" aria-pressed="true" id="register" class="navbar-brand btn btn-outline-light" href="{% url 'register' %}">Register</a>
+            {% endif %}
+        </nav>
+    </div>
+    <div class="container-fluid">
+        <div id="div_index" class="page px-5">
+            <p>
+                Bienvenido a la aplicación <strong>CaliRoad</strong>, plataforma que te permitirá conocer los ejercicios de la Calistenia,
+                armar y planificar tus entrenamientos semanales, registrar tus resultados y compartirlos con
+                los demás usuarios. Desarrolla tu potencial en compañia de otros y disfruta del proceso ! ∩▂∩
+            </p>
+            {% if user.is_authenticated %}
+            <p>
+                <strong>Modo de uso</strong>
+            </p>
+            <ul class="list-group">
+                <li class="list-group-item"><strong>Exercises:</strong> Aquí puedes ver el listado de ejercicios existentes. Pincha el que quieras para más información.</li>
+                <li class="list-group-item"><strong>My Routine:</strong> Aquí puedes ver tu rutina. Puedes planificar tus ejercicios de forma semanal agregando o quitando ejercicios en los días que tu eligas y definiendo la cantidad de series y repeticiones a realizar</li>
+                <li class="list-group-item"><strong>Results</strong> Aquí puedes registrar los resultados de tus entrenamientos para llevar un registro de tu progreso.</li>
+                <li class="list-group-item"><strong>Other Routine</strong>Aquí podrás buscar los entrenamientos y resultados de otros usuarios.</li>
+            </ul>
+            {% else %}
+            <p>
+                Para poder acceder a todo el potencial de la aplicaciones debes identificarte con tus credenciales
+            </p>
+            <p>   
+                Si aún no tienes una cuenta, puedes crearte un usuario haciendo click <a href="{% url 'register' %}">aquí</a>
+            </p>
+            {% endif %}
         </div>
-        <p>{{exercise.description}}</p>
-        <p>{{exercise.primary_muscle}}</p>
-        <p>{{exercise.secondary_muscle}}</p>
-        <p>{{exercise.video}}</p>
-        {% empty %}
-    <p>No hay nada aún</p>
-    {% endfor %}
+
+        <div id="div_exercise" class="page accordion">
+            
+        </div>
+
+        <div id="div_my_routine" class="page">
+            
+        </div>
+
+        <div id="div_results" class="page">
+
+        </div>
+
+        <div id="div_others" class="page">
+
+        </div>
+    </div>
 {% endblock %}
-    
-{% block script %}
-    {% csrf_token %}
+{% block scripts %}
+<script src="{% static 'routine/javascript.js' %}"></script>
 {% endblock %}

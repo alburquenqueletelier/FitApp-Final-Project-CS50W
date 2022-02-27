@@ -1,3 +1,5 @@
+from calendar import HTMLCalendar
+import calendar
 from multiprocessing import context
 from django.http import HttpResponseRedirect
 from django.urls import reverse
@@ -9,13 +11,11 @@ from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
 
+# Pagina principal
 def index(request):
-    exercises = Exercise.objects.all()
-    context = {
-        "exercises" : exercises
-    }
-    return render(request, "routine/index.html", context)
+    return render(request, "routine/index.html")
 
+# Pagina de identificacion
 def login_view(request):
     if request.method == "POST":
 
@@ -35,12 +35,12 @@ def login_view(request):
     else:
         return render(request, "routine/login.html")
 
-
+# pagina para cerrar cesion
 def logout_view(request):
     logout(request)
     return HttpResponseRedirect(reverse("index"))
 
-
+# pagina para registrar usuario
 def register(request):
     if request.method == "POST":
         username = request.POST["username"]
@@ -66,3 +66,23 @@ def register(request):
         return HttpResponseRedirect(reverse("index"))
     else:
         return render(request, "routine/register.html")
+
+# API para obtener info de ejercicios
+def menu_exercise(request):
+    exercise = Exercise.objects.all()
+    return JsonResponse([exer.serialize() for exer in exercise], safe=False)
+
+# API para obtener calendario
+def calendar_view(request):
+    cal = HTMLCalendar().formatmonth(2022,2)
+    return JsonResponse(cal, safe=False)
+
+
+
+### Pruebas que se borraran
+def index2(request):
+    exer = Exercise.objects.all()
+    context = {
+        'exercises':exer
+    }
+    return render(request, "routine/index copy.html", context)
