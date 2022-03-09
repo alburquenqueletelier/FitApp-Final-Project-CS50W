@@ -2,21 +2,7 @@
 {% load static %}
 
 {% block body %}
-    <div class="container-fluid">
-        <nav class="navbar navbar-expand-lg navbar-dark bg-dark m-3 p-3">
-            <button type="button" id="index" class="navbar-brand btn btn-outline-light">CaliRoad</button>
-            <button type="button" id="exercise" class="navbar-brand btn btn-outline-light">Exercises</button>
-            {% if user.is_authenticated %}
-                <button type="button" id="my_routine" class="navbar-brand btn btn-outline-light">My Routine</button>
-                <button type="button" id="results" class="navbar-brand btn btn-outline-light">Results</button>
-                <button type="button" id="others" class="navbar-brand btn btn-outline-light">Others Routine</button>
-                <a role="button" aria-pressed="true" id="logout" class="navbar-brand btn btn-outline-light" href="{% url 'logout' %}">Logout</a>
-            {% else %}
-                <a role="button" aria-pressed="true" id="login" class="navbar-brand btn btn-outline-light" href="{% url 'login' %}">Login</a>
-                <a role="button" aria-pressed="true" id="register" class="navbar-brand btn btn-outline-light" href="{% url 'register' %}">Register</a>
-            {% endif %}
-        </nav>
-    </div>
+
     <div class="container-fluid">
         <div id="div_index" class="page px-5">
             <p>
@@ -32,7 +18,7 @@
                 <li class="list-group-item"><strong>Exercises:</strong> Aquí puedes ver el listado de ejercicios existentes. Pincha el que quieras para más información.</li>
                 <li class="list-group-item"><strong>My Routine:</strong> Aquí puedes ver tu rutina. Puedes planificar tus ejercicios de forma semanal agregando o quitando ejercicios en los días que tu eligas y definiendo la cantidad de series y repeticiones a realizar</li>
                 <li class="list-group-item"><strong>Results</strong> Aquí puedes registrar los resultados de tus entrenamientos para llevar un registro de tu progreso.</li>
-                <li class="list-group-item"><strong>Other Routine</strong>Aquí podrás buscar los entrenamientos y resultados de otros usuarios.</li>
+                <li class="list-group-item"><strong>Other Routine</strong>Aquí podrás buscar los entrenamientos y resultados de otros usuarios con la finalidad de ajustar tus entrenamientos.</li>
             </ul>
             {% else %}
             <p>
@@ -44,7 +30,7 @@
             {% endif %}
         </div>
 
-        <div id="div_exercise" class="page accordion">
+        <div id="div_exercise" class="page">
             
         </div>
 
@@ -59,6 +45,21 @@
         <div id="div_others" class="page">
 
         </div>
+
+        <div class="form-popup page" id="myForm">
+            <form action="#" class="form-container">
+              <h1>Login</h1>
+          
+              <label for="email"><b>Email</b></label>
+              <input type="text" placeholder="Enter Email" name="email" required>
+          
+              <label for="psw"><b>Password</b></label>
+              <input type="password" placeholder="Enter Password" name="psw" required>
+          
+              <button type="submit" class="btn" id="submit_form">Login</button>
+              <button type="button" class="btn cancel" id="close_form" onclick="close_menu_to_add()">Close</button>
+            </form>
+          </div>
     </div>
 {% endblock %}
 {% block scripts %}

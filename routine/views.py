@@ -58,6 +58,8 @@ def register(request):
         try:
             user = User.objects.create_user(username, email, password)
             user.save()
+            plan = Plan(owner=user)
+            plan.save()
         except IntegrityError:
             return render(request, "routine/register.html", {
                 "message": "Username already taken."
@@ -68,21 +70,31 @@ def register(request):
         return render(request, "routine/register.html")
 
 # API para obtener info de ejercicios
-def menu_exercise(request):
+def menu_exercise(request, id=None):
     exercise = Exercise.objects.all()
+    if (id):
+        exercise = Exercise.objects.filter()
     return JsonResponse([exer.serialize() for exer in exercise], safe=False)
+
+# API para agregar ejercicio a la planificacion
+# Consta de creación de box, agregar dias según usuario
+# y finalmente agregar box a la planificación del usuario
+def add_exercise(request, id):
+    if request.method == 'POST':
+        exercise = Exercise.objects.get(id=id)
+        plan = Plan.objects.get(username=request.user)
+        
+
+
+    
+
+# API para cargar ejercicios de la planificación
+
+
+# API para cargar información de la planificación y resultados
+
 
 # API para obtener calendario
 def calendar_view(request):
     cal = HTMLCalendar().formatmonth(2022,2)
     return JsonResponse(cal, safe=False)
-
-
-
-### Pruebas que se borraran
-def index2(request):
-    exer = Exercise.objects.all()
-    context = {
-        'exercises':exer
-    }
-    return render(request, "routine/index copy.html", context)

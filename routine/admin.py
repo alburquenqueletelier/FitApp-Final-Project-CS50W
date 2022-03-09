@@ -17,4 +17,7 @@ class CustomExerciseAdmin(UserAdmin):
 
 admin.site.register(User)
 admin.site.register(Exercise)
+admin.site.register(Plan)
+admin.site.register(Box_exercise)
 admin.site.register(Muscle, MuscleAdmin)
+admin.site.register(Day_week)

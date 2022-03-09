@@ -13,6 +13,24 @@
     <body>
         <div class="container m-auto">
             <h1 id="title" class="text-center"> Welcome to The Change </h1>
+            <div class="container-fluid">
+                <nav class="navbar navbar-expand-lg navbar-dark bg-dark m-3 p-3">
+                    {% if user.is_superuser %}
+                        <a role="button" aria-pressed="true" id="login" class="navbar-brand btn btn-outline-warning" href="{% url 'admin:index' %}">Admin</a>
+                    {% endif %}
+                    <button type="button" id="index" class="navbar-brand btn btn-outline-light">CaliRoad</button>
+                    <button type="button" id="exercise" class="navbar-brand btn btn-outline-light">Exercises</button>
+                    {% if user.is_authenticated %}
+                        <button type="button" id="my_routine" class="navbar-brand btn btn-outline-light">My Routine</button>
+                        <button type="button" id="results" class="navbar-brand btn btn-outline-light">Results</button>
+                        <button type="button" id="others" class="navbar-brand btn btn-outline-light">Others Routine</button>
+                        <a role="button" aria-pressed="true" id="logout" class="navbar-brand btn btn-outline-light" href="{% url 'logout' %}">Logout</a>
+                    {% else %}
+                        <a role="button" aria-pressed="true" id="login" class="navbar-brand btn btn-outline-light" href="{% url 'login' %}">Login</a>
+                        <a role="button" aria-pressed="true" id="register" class="navbar-brand btn btn-outline-light" href="{% url 'register' %}">Register</a>
+                    {% endif %}
+                </nav>
+            </div>
             {% block body %}
             {% endblock %}
         </div>

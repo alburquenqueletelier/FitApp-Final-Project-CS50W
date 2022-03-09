@@ -1,5 +1,9 @@
+from atexit import register
+from tkinter import CASCADE
 from django.db import models
 from django.contrib.auth.models import AbstractUser
+from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 class User(AbstractUser):
     pass
@@ -35,3 +39,33 @@ class Exercise(models.Model):
             "video": self.video.url,
             "register_date": self.register_date
         } 
+
+
+class Day_week(models.Model):
+    
+    name = models.CharField(max_length=15)
+
+    def __str__(self):
+        return f"{self.name}"
+
+class Box_exercise(models.Model):
+
+    owner = models.OneToOneField(User, primary_key=True, on_delete=models.CASCADE)
+    exercise = models.OneToOneField(Exercise, on_delete=models.CASCADE)
+    reps = models.IntegerField(blank=True)
+    series = models.IntegerField(blank=True)
+    day = models.ManyToManyField(Day_week, blank=True, related_name="onday")
+    register_date = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.owner, self.exercise}"
+    
+
+class Plan(models.Model):
+
+    owner = models.OneToOneField(User, primary_key=True, on_delete=models.CASCADE)
+    exercises = models.ManyToManyField(Box_exercise, related_name="added", blank=True)
+    register_date = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.owner}"
