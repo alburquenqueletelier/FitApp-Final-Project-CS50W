@@ -6,25 +6,30 @@ document.addEventListener('DOMContentLoaded', () => {
     // con un determinado id 
     const buttons = document.querySelectorAll('button');
     buttons.forEach(button => {
-        if (button.id != 'myForm' && button.id != 'submit_form'){
+        if (button.id != 'close_form' && button.id != 'submit_form'){
             button.addEventListener('click', () => {
-                load_page(button.id)
+                if (document.querySelector('#myForm').style.display == 'block'){
+                    close_menu_to_add();
+                    load_page(button.id);
+                } else {
+                    load_page(button.id);
+                }
+
             })
         }
-        // Por defecto se carga meno principal "CaliRoad"
-        
     })
-    
 
 })
 //Arrays de datos:
+// Copiados de la pagina mencionada al final del script
 var meses=["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
 var lasemana=["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"];
-var diassemana=["lun","mar","mié","jue","vie","sáb","dom"];
+var diassemana=["Lunes","Martes","Miércoles","Jueves","Viernes","Sábado","Domingo"];
 
 // funcion para cargar pagina
 function load_page(event){
 
+    let request_user = JSON.parse(document.getElementById('request_user').textContent);
     // Cambia el estado de display de los divs que contienen las paginas según corresponda
     let page = event;
     divs = document.querySelectorAll('div.page');
@@ -80,6 +85,9 @@ function load_page(event){
                             </div>
                         </div>
                     `;
+                    if (!request_user){
+                        div.querySelector('button.btn-primary').style.display="none";
+                    }
                     div_accordion.appendChild(div);
                 })
             div_exercise.appendChild(div_accordion);
@@ -127,11 +135,10 @@ function load_page(event){
     }
 }
 
+// Carga calendario semanal o mensual segun corresponda
 function load_plan(data) {
 
     div_calendario = document.querySelector('#calendario');
-    // Carga calendario semanal o mensual segun corresponda
-    
     switch (data){
         case 'week':
             div_calendario.innerHTML = `
@@ -200,6 +207,7 @@ function load_plan(data) {
     }
 }
 
+// Genera el calendario para la planificación semanal
 function cuerpo_semana(){
     div_calendario = document.querySelector('#calendario');
     dias = document.querySelector('#dias');
@@ -211,12 +219,79 @@ function cuerpo_semana(){
     })
 }
 
+// Genera el menu para añadir ejercicio, reps y series a los días seleccionados
+// Recoge div contenedor desde HTML y crea los elementos del formulario para luego ser apendd.
 function menu_to_add(id){
-    document.getElementById("myForm").style.display = "block";
+    // Crea div contenedor del form
+    let div_form = document.querySelector("#myForm");
+    // Boton submit que se añade al final
+    let submit = div_form.querySelector('#submit_form');
+    if (div_form.style.display == 'none'){
+        div_form.querySelector('h1').innerHTML = `Add <strong>${document.querySelector(`#heading${id}`).innerText}</strong>`;
+        // Input para numero de series
+        series = document.createElement('input');
+        series.type = 'number'
+        series.className = 'form-control';
+        series.id = 'series';
+        label_series = document.createElement('label');
+        label_series.htmlFor = 'series';
+        label_series.innerText = 'N° Series';
+        label_series.className = 'form-check-label';
+        // Input para numero de repeticiones por serie
+        reps = document.createElement('input');
+        reps.type = 'number'
+        reps.className = 'form-control';
+        reps.id = 'reps';
+        label_reps = document.createElement('label');
+        label_reps.innerText = 'N° Repeticiones';
+        label_reps.htmlFor = 'reps';
+        label_reps.className = 'form-check-label';
+        // Se añade inputs y etiquetas a nuevo div que se integra al formulario
+        div_inputs = document.createElement('div');
+        div_inputs.id = 'div_inputs';
+        div_inputs.appendChild(label_series);
+        div_inputs.appendChild(series);
+        div_inputs.appendChild(label_reps);
+        div_inputs.appendChild(reps);
+        div_form.querySelector('form').appendChild(div_inputs);
+        // Crea los checkbox para seleccionar dias
+        diassemana.forEach(dia => {
+            div_check = document.createElement('div');
+            div_check.className = "form-check";
+            checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.id = dia;
+            checkbox.value = dia;
+            checkbox.className = "form-check-input";
+            label = document.createElement('label');
+            label.htmlFor = dia;
+            label.className = "form-check-label";
+            label.appendChild(document.createTextNode(`${dia}`));
+            div_check.appendChild(checkbox);
+            div_check.appendChild(label);
+            div_form.querySelector('form').appendChild(div_check);
+        })
+    }
+    div_form.style.display = "block";
+    div_form.onload = () => {
+        window.onclick = function(event) {
+             if (event.target != document.querySelector('#myForm')){
+                 close_menu_to_add();
+             }
+        }
+    }
 }
 
 function close_menu_to_add(){
-    document.getElementById("myForm").style.display = "none";
+    div_form = document.querySelector('#myForm');
+    form = div_form.querySelector('form');
+    div_inputs = form.querySelector('#div_inputs');
+    form.removeChild(div_inputs);
+    delete_check = form.querySelectorAll('div.form-check');
+    delete_check.forEach(div => {
+        form.removeChild(div);
+    })
+    div_form.style.display = "none";
 }
 
 function add_exercise(id){

@@ -46,21 +46,14 @@
 
         </div>
 
-        <div class="form-popup page" id="myForm">
-            <form action="#" class="form-container">
-              <h1>Login</h1>
-          
-              <label for="email"><b>Email</b></label>
-              <input type="text" placeholder="Enter Email" name="email" required>
-          
-              <label for="psw"><b>Password</b></label>
-              <input type="password" placeholder="Enter Password" name="psw" required>
-          
-              <button type="submit" class="btn" id="submit_form">Login</button>
-              <button type="button" class="btn cancel" id="close_form" onclick="close_menu_to_add()">Close</button>
+        <div class="form-popup form-group page" id="myForm">
+            <form class="form-container">
+                <h1></h1>
+                <button type="button" class="btn cancel" id="close_form" onclick="close_menu_to_add()">Close</button>
             </form>
-          </div>
+        </div>
     </div>
+    {{ request.user.username|json_script:"request_user" }}
 {% endblock %}
 {% block scripts %}
 <script src="{% static 'routine/javascript.js' %}"></script>

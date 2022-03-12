@@ -83,10 +83,9 @@ def add_exercise(request, id):
     if request.method == 'POST':
         exercise = Exercise.objects.get(id=id)
         plan = Plan.objects.get(username=request.user)
-        
 
 
-    
+
 
 # API para cargar ejercicios de la planificación
 
