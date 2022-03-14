@@ -117,3 +117,9 @@ class ModelsTestCase(TestCase):
         c = Client()
         response = c.get("")
         self.assertEqual(response.status_code, 200)
+
+    def test_box_exercise(self):
+        box = Box_exercise.objects.all()
+        pull_up = Exercise.objects.get(name="Pull Up")
+        self.assertIsNotNone(box)
+        self.assertEqual(box[0].exercise, pull_up)

@@ -1,5 +1,7 @@
 from calendar import HTMLCalendar
 import calendar
+import json
+from django.http import JsonResponse
 from multiprocessing import context
 from django.http import HttpResponseRedirect
 from django.urls import reverse
@@ -79,10 +81,30 @@ def menu_exercise(request, id=None):
 # API para agregar ejercicio a la planificacion
 # Consta de creación de box, agregar dias según usuario
 # y finalmente agregar box a la planificación del usuario
+@csrf_exempt
+@login_required
 def add_exercise(request, id):
-    if request.method == 'POST':
-        exercise = Exercise.objects.get(id=id)
-        plan = Plan.objects.get(username=request.user)
+
+    if request.method != "POST":
+        return JsonResponse({"error": "POST request required."}, status=400)
+    exercise = Exercise.objects.get(id=id)
+    user = User.objects.get(username = request.user)
+    plan = Plan.objects.get(owner=user)
+    data_post = json.loads(request.body)
+    series = data_post.get('series')
+    reps = data_post.get('reps')
+    days = data_post.get('days')
+    box_exercise = Box_exercise.objects.create(
+        owner =  user,
+        exercise = exercise,
+        reps = reps,
+        series = series
+    )
+    for day in days:
+        d = Day_week.objects.get(name=day)
+        box_exercise.day.add(d)
+    box_exercise.save()
+    return JsonResponse({"message": "Exercise added in your routine."}, status=201)
 
 
 

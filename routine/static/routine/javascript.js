@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
             })
-        }
+        } 
     })
 
 })
@@ -227,7 +227,7 @@ function menu_to_add(id){
     // Boton submit que se añade al final
     let submit = div_form.querySelector('#submit_form');
     if (div_form.style.display == 'none'){
-        div_form.querySelector('h1').innerHTML = `Add <strong>${document.querySelector(`#heading${id}`).innerText}</strong>`;
+        div_form.querySelector('h1').innerHTML = `Add <strong id="form-add-h1">${document.querySelector(`#heading${id}`).innerText}</strong>`;
         // Input para numero de series
         series = document.createElement('input');
         series.type = 'number'
@@ -253,7 +253,7 @@ function menu_to_add(id){
         div_inputs.appendChild(series);
         div_inputs.appendChild(label_reps);
         div_inputs.appendChild(reps);
-        div_form.querySelector('form').appendChild(div_inputs);
+        div_form.querySelector('form').insertBefore(div_inputs, div_form.querySelector('div.row'));
         // Crea los checkbox para seleccionar dias
         diassemana.forEach(dia => {
             div_check = document.createElement('div');
@@ -262,6 +262,7 @@ function menu_to_add(id){
             checkbox.type = 'checkbox';
             checkbox.id = dia;
             checkbox.value = dia;
+            checkbox.required = true;
             checkbox.className = "form-check-input";
             label = document.createElement('label');
             label.htmlFor = dia;
@@ -269,17 +270,12 @@ function menu_to_add(id){
             label.appendChild(document.createTextNode(`${dia}`));
             div_check.appendChild(checkbox);
             div_check.appendChild(label);
-            div_form.querySelector('form').appendChild(div_check);
+            div_form.querySelector('form').insertBefore(div_check, div_form.querySelector('div.row'));
         })
     }
     div_form.style.display = "block";
-    div_form.onload = () => {
-        window.onclick = function(event) {
-             if (event.target != document.querySelector('#myForm')){
-                 close_menu_to_add();
-             }
-        }
-    }
+    submit = div_form.querySelector('#submit_form');
+    submit.addEventListener('click', () => {add_exercise(id)});
 }
 
 function close_menu_to_add(){
@@ -295,14 +291,28 @@ function close_menu_to_add(){
 }
 
 function add_exercise(id){
+    let arr = [];
+    document.querySelectorAll('input.form-check-input').forEach(dia => {
+        if (dia.checked){
+            arr.push(dia.value)
+        }
+    });
     fetch('/exercises/'+id,{
         method: 'POST',
         body: JSON.stringify({
-            recipients: document.querySelector('#compose-recipients').value,
-            subject: document.querySelector('#compose-subject').value,
-            body: document.querySelector('#compose-body').value
+            series: document.querySelector('#series').value,
+            reps: document.querySelector('#reps').value,
+            days: arr
         })
     })
+    .then(response => response.json())
+    // then(() => {
+    //     let button = document.querySelector('#exercise');
+    //     button.click();
+    //     window.onload = () => {
+    //         document.querySelector(`heading${id}`);
+    //     }    
+    // })
 }
 
 
