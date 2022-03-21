@@ -14,7 +14,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 } else {
                     load_page(button.id);
                 }
-
             })
         } 
     })
@@ -80,7 +79,7 @@ function load_page(event){
                                     </div>
                                 </div>
                                 <div class="text-center">
-                                    <button class="btn btn-primary mt-2" onclick="menu_to_add(${exercise.id})">Add to Routine</button>
+                                    <button class="btn btn-primary mt-2" data-name="${exercise.name}" data-id="${exercise.id}" onclick="menu_to_add(${exercise.id})">Add to Routine</button>
                                 </div>
                             </div>
                         </div>
@@ -90,7 +89,38 @@ function load_page(event){
                     }
                     div_accordion.appendChild(div);
                 })
-            div_exercise.appendChild(div_accordion);
+                div_exercise.appendChild(div_accordion);
+            })
+            .catch(error => {
+                console.log(error);
+            })
+            // Si ya esta agregado el ejercicio se cambia el button para que edite
+            // y se agrega boton para remover ejercicio
+            fetch('/plan', {
+                method: 'GET'
+            })
+            .then(response => response.json())
+            .then(data => {
+                add_buttons = document.querySelectorAll('button.btn-primary');
+                add_buttons.forEach(button => {
+                    data.exercises.forEach(exercise => {
+                        if(exercise.exercise.name == button.dataset.name){
+                            button.removeAttribute("onclick");
+                            button.innerText = 'Edit exercise';
+                            button.className = 'btn btn-warning mt-2 me-2';
+                            button.onclick = () => menu_to_add(button.dataset.id, 'PUT');
+                            remove_button = document.createElement('button');
+                            remove_button.id = 'remove_button';
+                            remove_button.className = 'btn btn-danger mt-2';
+                            remove_button.innerText = 'Remove exercise';
+                            remove_button.onclick = () => remove_exercise(button.dataset.id);
+                            button.insertAdjacentElement("afterend", remove_button);
+                        }
+                    })
+                });
+            })
+            .catch(error => {
+                console.log(error);
             })
             break;
         // Genera pagina de planificación
@@ -142,34 +172,34 @@ function load_plan(data) {
     switch (data){
         case 'week':
             div_calendario.innerHTML = `
-            <table id="week_days" class="table table-bordered">
-                <thead>
-                    <tr class="table-success text-center">
-                        <th scope="col">Lunes</th>
-                        <th scope="col">Martes</th>
-                        <th scope="col">Miercoles</th>
-                        <th scope="col">Jueves</th>
-                        <th scope="col">Viernes</th>
-                        <th scope="col">Sabado</th>
-                        <th scope="col">Domingo</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr id="dias">
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                    </tr>
-                </tbody>
-            </table>
+            <div class="table-responsive">
+                <table id="week_days" class="table table-bordered">
+                    <thead>
+                        <tr id="week_head" class="table-success text-center">
+                            <th scope="col">Lunes</th>
+                            <th scope="col">Martes</th>
+                            <th scope="col">Miercoles</th>
+                            <th scope="col">Jueves</th>
+                            <th scope="col">Viernes</th>
+                            <th scope="col">Sabado</th>
+                            <th scope="col">Domingo</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr id="dias">
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
             `;
-            window.onload = () => {
-                cuerpo_semana();
-            }
+            week_info();
             break;
      
         case 'month':
@@ -209,7 +239,6 @@ function load_plan(data) {
 
 // Genera el calendario para la planificación semanal
 function cuerpo_semana(){
-    div_calendario = document.querySelector('#calendario');
     dias = document.querySelector('#dias');
     dias = dias.querySelectorAll('td');
     int = 0;
@@ -219,14 +248,53 @@ function cuerpo_semana(){
     })
 }
 
+function week_info(){
+    fetch('/plan',{
+        method: 'GET'
+    })
+    .then(response =>response.json())
+    .then(data => {
+        // console.log(data);
+        tr = document.querySelector('#dias');
+        dias_info = tr.querySelectorAll('td');
+        let i = 0;
+        dias_info.forEach(celda => {
+            let lista = document.createElement('ol');
+            data.exercises.forEach(exercise => {
+                if (exercise.day.includes(diassemana[i])){
+                    li = document.createElement('li');
+                    li.innerText = `${exercise.exercise.name}`;
+                    celda.className = 'bg-info';
+                    lista.appendChild(li);
+                    celda.appendChild(lista);
+                }
+            })
+            i+=1;
+        })
+    })
+    .catch(error => {
+        console.log(error);
+    })
+}
+
+// Carga información del ejercicio si es que ya esta agregado a la rutina y así poder modificarlo
+// function load_exercise(id){
+//     fetch('/exercise/'+id)
+//     .then(response => response.json())
+//     .then(exercise => {
+
+//     })
+// }
+
 // Genera el menu para añadir ejercicio, reps y series a los días seleccionados
 // Recoge div contenedor desde HTML y crea los elementos del formulario para luego ser apendd.
-function menu_to_add(id){
+function menu_to_add(id, action='POST'){
     // Crea div contenedor del form
     let div_form = document.querySelector("#myForm");
     // Boton submit que se añade al final
     let submit = div_form.querySelector('#submit_form');
     if (div_form.style.display == 'none'){
+        // fetch()
         div_form.querySelector('h1').innerHTML = `Add <strong id="form-add-h1">${document.querySelector(`#heading${id}`).innerText}</strong>`;
         // Input para numero de series
         series = document.createElement('input');
@@ -262,7 +330,6 @@ function menu_to_add(id){
             checkbox.type = 'checkbox';
             checkbox.id = dia;
             checkbox.value = dia;
-            checkbox.required = true;
             checkbox.className = "form-check-input";
             label = document.createElement('label');
             label.htmlFor = dia;
@@ -273,9 +340,29 @@ function menu_to_add(id){
             div_form.querySelector('form').insertBefore(div_check, div_form.querySelector('div.row'));
         })
     }
+    if (action=='PUT'){
+        fetch('/exercises/info/'+id)
+        .then(response => response.json())
+        .then(data => {
+            reps.value = data.reps;
+            series.value = data.series;
+            data.day.forEach(day => {
+                if (diassemana.includes(day)){
+                    document.querySelector(`#${day}`).checked = true;
+                }
+            })
+            console.log(data);
+        })
+        .catch(error => {
+            console.log(error);
+        })
+    }
     div_form.style.display = "block";
-    submit = div_form.querySelector('#submit_form');
-    submit.addEventListener('click', () => {add_exercise(id)});
+    submit = div_form.querySelector('form');
+    submit.addEventListener('submit', () => {
+        add_exercise(id, action);
+        // window.location.reload();
+    });
 }
 
 function close_menu_to_add(){
@@ -290,15 +377,20 @@ function close_menu_to_add(){
     div_form.style.display = "none";
 }
 
-function add_exercise(id){
+function add_exercise(id, action='POST'){
+    if(action == 'PUT'){
+        url = '/exercises/edit/';
+    } else {
+        url = 'exercises/add/'
+    }
     let arr = [];
     document.querySelectorAll('input.form-check-input').forEach(dia => {
         if (dia.checked){
             arr.push(dia.value)
         }
     });
-    fetch('/exercises/'+id,{
-        method: 'POST',
+    fetch(url+id,{
+        method: action,
         body: JSON.stringify({
             series: document.querySelector('#series').value,
             reps: document.querySelector('#reps').value,
@@ -306,182 +398,186 @@ function add_exercise(id){
         })
     })
     .then(response => response.json())
-    // then(() => {
-    //     let button = document.querySelector('#exercise');
-    //     button.click();
-    //     window.onload = () => {
-    //         document.querySelector(`heading${id}`);
-    //     }    
-    // })
+    .then(status => {
+        console.log(status);
+    })
+    .catch(error => {
+        console.log(error);
+    })
 }
 
-
-function load_routine(){
-    // fetch
+function remove_exercise(id){
+    fetch('/exercises/remove/'+id, {
+        method: 'POST'
+    })
+    .then(response => response.json())
+    .then(response => console.log(response))
+    .catch(error => console.log(error))
 }
+
 
 // ########################################################### //
 
 //FUNCIONES de creación del calendario:
-//cabecera del calendario
-function cuerpo_mes() {
-    const div_calendario = document.querySelector('#calendario');
-    // Instrucciones para que el usuario pueda utilizar la app
-    div_calendario.innerHTML = `
-        <div id="anterior" onclick="mesantes()"></div>
-        <div id="posterior" onclick="mesdespues()"></div>
-        <h2 id="titulos"></h2>
-        <table id="diasc">
-            <tr id="fila0"><th></th><th></th><th></th><th></th><th></th><th></th><th></th></tr>
-            <tr id="fila1"><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-            <tr id="fila2"><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-            <tr id="fila3"><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-            <tr id="fila4"><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-            <tr id="fila5"><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-            <tr id="fila6"><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-        </table>
-        <div id="fechaactual"><i onclick="actualizar()">HOY: </i></div>
-        <div id="buscafecha">
-            <form action="#" name="buscar">
-                <p>Buscar ... MES
-                    <select name="buscames">
-                    <option value="0">Enero</option>
-                    <option value="1">Febrero</option>
-                    <option value="2">Marzo</option>
-                    <option value="3">Abril</option>
-                    <option value="4">Mayo</option>
-                    <option value="5">Junio</option>
-                    <option value="6">Julio</option>
-                    <option value="7">Agosto</option>
-                    <option value="8">Septiembre</option>
-                    <option value="9">Octubre</option>
-                    <option value="10">Noviembre</option>
-                    <option value="11">Diciembre</option>
-                    </select>
-                ... AÑO ...
-                    <input type="text" name="buscaanno" maxlength="4" size="4" />
-                ... 
-                    <input type="button" value="BUSCAR" onclick="mifecha()" />
-                </p>
-            </form>
-        </div>
-        `;
-}
+// //cabecera del calendario
+// function cuerpo_mes() {
+//     const div_calendario = document.querySelector('#calendario');
+//     // Instrucciones para que el usuario pueda utilizar la app
+//     div_calendario.innerHTML = `
+//         <div id="anterior" onclick="mesantes()"></div>
+//         <div id="posterior" onclick="mesdespues()"></div>
+//         <h2 id="titulos"></h2>
+//         <table id="diasc">
+//             <tr id="fila0"><th></th><th></th><th></th><th></th><th></th><th></th><th></th></tr>
+//             <tr id="fila1"><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+//             <tr id="fila2"><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+//             <tr id="fila3"><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+//             <tr id="fila4"><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+//             <tr id="fila5"><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+//             <tr id="fila6"><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+//         </table>
+//         <div id="fechaactual"><i onclick="actualizar()">HOY: </i></div>
+//         <div id="buscafecha">
+//             <form action="#" name="buscar">
+//                 <p>Buscar ... MES
+//                     <select name="buscames">
+//                     <option value="0">Enero</option>
+//                     <option value="1">Febrero</option>
+//                     <option value="2">Marzo</option>
+//                     <option value="3">Abril</option>
+//                     <option value="4">Mayo</option>
+//                     <option value="5">Junio</option>
+//                     <option value="6">Julio</option>
+//                     <option value="7">Agosto</option>
+//                     <option value="8">Septiembre</option>
+//                     <option value="9">Octubre</option>
+//                     <option value="10">Noviembre</option>
+//                     <option value="11">Diciembre</option>
+//                     </select>
+//                 ... AÑO ...
+//                     <input type="text" name="buscaanno" maxlength="4" size="4" />
+//                 ... 
+//                     <input type="button" value="BUSCAR" onclick="mifecha()" />
+//                 </p>
+//             </form>
+//         </div>
+//         `;
+// }
 
-function cabecera() {
-    tit.innerHTML=meses[mescal]+" de "+annocal;
-    mesant=mescal-1; //mes anterior
-    mespos=mescal+1; //mes posterior
-    if (mesant<0) {mesant=11;}
-    if (mespos>11) {mespos=0;}
-    ant.innerHTML=meses[mesant]
-    pos.innerHTML=meses[mespos]
-    } 
-//primera línea de tabla: días de la semana.
-function primeralinea() {
-    for (i=0;i<7;i++) {
-        celda0=f0.getElementsByTagName("th")[i];
-        celda0.innerHTML=diassemana[i]
-        }
-    }
-//rellenar celdas con los días
-function escribirdias() {
-    //Buscar dia de la semana del dia 1 del mes:
-    primeromes=new Date(annocal,mescal,"1") //buscar primer día del mes
-    prsem=primeromes.getDay() //buscar día de la semana del día 1
-    prsem--; //adaptar al calendario español (empezar por lunes)
-    if (prsem==-1) {prsem=6;}
-    //buscar fecha para primera celda:
-    diaprmes=primeromes.getDate() 
-    prcelda=diaprmes-prsem; //restar días que sobran de la semana
-    empezar=primeromes.setDate(prcelda) //empezar= tiempo UNIX 1ª celda
-    diames=new Date() //convertir en fecha
-    diames.setTime(empezar); //diames=fecha primera celda.
-    //Recorrer las celdas para escribir el día:
-    for (i=1;i<7;i++) { //localizar fila
-        fila=document.getElementById("fila"+i);
-        for (j=0;j<7;j++) {
-            midia=diames.getDate() 
-            mimes=diames.getMonth()
-            mianno=diames.getFullYear()
-            celda=fila.getElementsByTagName("td")[j];
-            celda.innerHTML=midia;
-            //Recuperar estado inicial al cambiar de mes:
-            celda.style.backgroundColor="#9bf5ff";
-            celda.style.color="#492736";
-            //dias restantes del mes en gris
-            if (mimes!=mescal) { 
-               celda.style.color="#a0babc";
-               }
-            //destacar la fecha actual
-            if (mimes==meshoy && midia==diahoy && mianno==annohoy ) { 
-               celda.style.backgroundColor="#f0b19e";
-               celda.innerHTML="<cite title='Fecha Actual'>"+midia+"</cite>";
-               }
-            // Se agrega función click para permitir añadir ejercicio
-            celda.onclick = ()=> {
+// function cabecera() {
+//     tit.innerHTML=meses[mescal]+" de "+annocal;
+//     mesant=mescal-1; //mes anterior
+//     mespos=mescal+1; //mes posterior
+//     if (mesant<0) {mesant=11;}
+//     if (mespos>11) {mespos=0;}
+//     ant.innerHTML=meses[mesant]
+//     pos.innerHTML=meses[mespos]
+//     } 
+// //primera línea de tabla: días de la semana.
+// function primeralinea() {
+//     for (i=0;i<7;i++) {
+//         celda0=f0.getElementsByTagName("th")[i];
+//         celda0.innerHTML=diassemana[i]
+//         }
+//     }
+// //rellenar celdas con los días
+// function escribirdias() {
+//     //Buscar dia de la semana del dia 1 del mes:
+//     primeromes=new Date(annocal,mescal,"1") //buscar primer día del mes
+//     prsem=primeromes.getDay() //buscar día de la semana del día 1
+//     prsem--; //adaptar al calendario español (empezar por lunes)
+//     if (prsem==-1) {prsem=6;}
+//     //buscar fecha para primera celda:
+//     diaprmes=primeromes.getDate() 
+//     prcelda=diaprmes-prsem; //restar días que sobran de la semana
+//     empezar=primeromes.setDate(prcelda) //empezar= tiempo UNIX 1ª celda
+//     diames=new Date() //convertir en fecha
+//     diames.setTime(empezar); //diames=fecha primera celda.
+//     //Recorrer las celdas para escribir el día:
+//     for (i=1;i<7;i++) { //localizar fila
+//         fila=document.getElementById("fila"+i);
+//         for (j=0;j<7;j++) {
+//             midia=diames.getDate() 
+//             mimes=diames.getMonth()
+//             mianno=diames.getFullYear()
+//             celda=fila.getElementsByTagName("td")[j];
+//             celda.innerHTML=midia;
+//             //Recuperar estado inicial al cambiar de mes:
+//             celda.style.backgroundColor="#9bf5ff";
+//             celda.style.color="#492736";
+//             //dias restantes del mes en gris
+//             if (mimes!=mescal) { 
+//                celda.style.color="#a0babc";
+//                }
+//             //destacar la fecha actual
+//             if (mimes==meshoy && midia==diahoy && mianno==annohoy ) { 
+//                celda.style.backgroundColor="#f0b19e";
+//                celda.innerHTML="<cite title='Fecha Actual'>"+midia+"</cite>";
+//                }
+//             // Se agrega función click para permitir añadir ejercicio
+//             celda.onclick = ()=> {
                 
-            }
-            //pasar al siguiente día
-            midia=midia+1;
-            diames.setDate(midia);
-            }
-        }
-    }
+//             }
+//             //pasar al siguiente día
+//             midia=midia+1;
+//             diames.setDate(midia);
+//             }
+//         }
+//     }
 
 
-//Ver mes anterior
-function mesantes() {
-    nuevomes=new Date() //nuevo objeto de fecha
-    primeromes--; //Restamos un día al 1 del mes visualizado
-    nuevomes.setTime(primeromes) //cambiamos fecha al mes anterior 
-    mescal=nuevomes.getMonth() //cambiamos las variables que usarán las funciones
-    annocal=nuevomes.getFullYear()
-    cabecera() //llamada a funcion de cambio de cabecera
-    escribirdias() //llamada a funcion de cambio de tabla.
-    }
-//ver mes posterior
-function mesdespues() {
-    nuevomes=new Date() //nuevo obejto fecha
-    tiempounix=primeromes.getTime() //tiempo de primero mes visible
-    tiempounix=tiempounix+(45*24*60*60*1000) //le añadimos 45 días 
-    nuevomes.setTime(tiempounix) //fecha con mes posterior.
-    mescal=nuevomes.getMonth() //cambiamos variables 
-    annocal=nuevomes.getFullYear()
-    cabecera() //escribir la cabecera 
-    escribirdias() //escribir la tabla
-    }
-//volver al mes actual
-function actualizar() {
-    mescal=hoy.getMonth(); //cambiar a mes actual
-    annocal=hoy.getFullYear(); //cambiar a año actual 
-    cabecera() //escribir la cabecera
-    escribirdias() //escribir la tabla
-    }
-//ir al mes buscado
-function mifecha() {
-    //Recoger dato del año en el formulario
-    mianno=document.buscar.buscaanno.value; 
-    //recoger dato del mes en el formulario
-    listameses=document.buscar.buscames;
-    opciones=listameses.options;
-    num=listameses.selectedIndex
-    mimes=opciones[num].value;
-    //Comprobar si el año está bien escrito
-    if (isNaN(mianno) || mianno<1) { 
-       //año mal escrito: mensaje de error
-       alert("El año no es válido:\n debe ser un número mayor que 0")
-       }
-    else { //año bien escrito: ver mes en calendario:
-         mife=new Date(); //nueva fecha
-         mife.setMonth(mimes); //añadir mes y año a nueva fecha
-         mife.setFullYear(mianno);
-         mescal=mife.getMonth(); //cambiar a mes y año indicados
-         annocal=mife.getFullYear();
-         cabecera() //escribir cabecera
-         escribirdias() //escribir tabla
-         }
-    }
+// //Ver mes anterior
+// function mesantes() {
+//     nuevomes=new Date() //nuevo objeto de fecha
+//     primeromes--; //Restamos un día al 1 del mes visualizado
+//     nuevomes.setTime(primeromes) //cambiamos fecha al mes anterior 
+//     mescal=nuevomes.getMonth() //cambiamos las variables que usarán las funciones
+//     annocal=nuevomes.getFullYear()
+//     cabecera() //llamada a funcion de cambio de cabecera
+//     escribirdias() //llamada a funcion de cambio de tabla.
+//     }
+// //ver mes posterior
+// function mesdespues() {
+//     nuevomes=new Date() //nuevo obejto fecha
+//     tiempounix=primeromes.getTime() //tiempo de primero mes visible
+//     tiempounix=tiempounix+(45*24*60*60*1000) //le añadimos 45 días 
+//     nuevomes.setTime(tiempounix) //fecha con mes posterior.
+//     mescal=nuevomes.getMonth() //cambiamos variables 
+//     annocal=nuevomes.getFullYear()
+//     cabecera() //escribir la cabecera 
+//     escribirdias() //escribir la tabla
+//     }
+// //volver al mes actual
+// function actualizar() {
+//     mescal=hoy.getMonth(); //cambiar a mes actual
+//     annocal=hoy.getFullYear(); //cambiar a año actual 
+//     cabecera() //escribir la cabecera
+//     escribirdias() //escribir la tabla
+//     }
+// //ir al mes buscado
+// function mifecha() {
+//     //Recoger dato del año en el formulario
+//     mianno=document.buscar.buscaanno.value; 
+//     //recoger dato del mes en el formulario
+//     listameses=document.buscar.buscames;
+//     opciones=listameses.options;
+//     num=listameses.selectedIndex
+//     mimes=opciones[num].value;
+//     //Comprobar si el año está bien escrito
+//     if (isNaN(mianno) || mianno<1) { 
+//        //año mal escrito: mensaje de error
+//        alert("El año no es válido:\n debe ser un número mayor que 0")
+//        }
+//     else { //año bien escrito: ver mes en calendario:
+//          mife=new Date(); //nueva fecha
+//          mife.setMonth(mimes); //añadir mes y año a nueva fecha
+//          mife.setFullYear(mianno);
+//          mescal=mife.getMonth(); //cambiar a mes y año indicados
+//          annocal=mife.getFullYear();
+//          cabecera() //escribir cabecera
+//          escribirdias() //escribir tabla
+//          }
+//     }
 
 // https://aprende-web.net/jspracticas/tiempo/cod5.html
 // Se utiliza el codigo fuente de este repositorio para generar

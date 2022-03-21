@@ -4,7 +4,13 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import MaxValueValidator, MinValueValidator
 
+
 class User(AbstractUser):
+    def serialize(self):
+        return {
+            "id":self.id,
+            "name":self.username
+        }
     pass
 
 class Muscle(models.Model):
@@ -47,9 +53,10 @@ class Day_week(models.Model):
     def __str__(self):
         return f"{self.name}"
 
+
 class Box_exercise(models.Model):
 
-    owner = models.OneToOneField(User, primary_key=True, on_delete=models.CASCADE)
+    owner = models.ForeignKey(User, on_delete=models.CASCADE)
     exercise = models.OneToOneField(Exercise, on_delete=models.CASCADE)
     reps = models.IntegerField(blank=True, validators=[MinValueValidator(1,'Enter # greater than 0'), MaxValueValidator(100,'Enter # less than 100')])
     series = models.IntegerField(blank=True, validators=[MinValueValidator(1,'Enter # greater than 0'), MaxValueValidator(30,'Enter # less than 30')])
@@ -57,7 +64,16 @@ class Box_exercise(models.Model):
     register_date = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.owner, self.exercise}"
+        return f"{self.owner.username, self.exercise.name}"
+
+    def serialize(self):
+        return {
+            "owner":self.owner.serialize(),
+            "exercise":self.exercise.serialize(),
+            "reps":self.reps,
+            "series":self.series,
+            "day":[d.name for d in self.day.all()]
+        }
     
 
 class Plan(models.Model):
@@ -68,3 +84,13 @@ class Plan(models.Model):
 
     def __str__(self):
         return f"{self.owner}"
+    
+    def serialize(self):
+        return {
+            "owner": self.owner.username,
+            "exercise" : [box.exercise.name for box in self.exercises.all()],
+            # "days" : [box.day.all()[0] for box in self.exercises.all()],
+            # "primary_muscles" : [box.exercise.primary_muscles.all() for box in self.exercises.all()],
+            # "secondary_muscles" : [box.exercise.secondary_muscles.all() for box in self.exercises.all()],
+            "register_date": self.register_date
+        } 

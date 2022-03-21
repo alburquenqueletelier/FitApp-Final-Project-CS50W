@@ -11,6 +11,10 @@ urlpatterns = [
 
     ## API ##
     path("exercises", views.menu_exercise, name="menu_exercise"),
-    path("calendar_view", views.calendar_view, name="calendar_view"),
-    path("exercises/<int:id>", views.add_exercise, name="add_exercise")
+    path("exercises/add/<int:id>", views.add_exercise, name="add_exercise"),
+    path("exercises/edit/<int:id>", views.edit_exercise, name="add_exercise"),
+    path("exercises/info/<int:id>", views.info_exercise, name="info_exercise"),
+    path("exercises/remove/<int:id>", views.remove_exercise, name="remove_exercise"),
+    path("plan", views.load_plan, name="load_plan")
+    # path("calendar_view", views.calendar_view, name="calendar_view")
 ]
