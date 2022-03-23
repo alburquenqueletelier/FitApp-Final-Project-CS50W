@@ -151,8 +151,9 @@ def edit_exercise(request, id):
 @csrf_exempt
 @login_required
 def remove_exercise(request, id):
-    if request.method != 'POST':
+    if request.method != 'GET':
         return JsonResponse({"error": "POST request required."}, status=400) 
+
     user = User.objects.get(username = request.user)
     exercise = Exercise.objects.get(id=id)
     box_exercise = Box_exercise.objects.get(owner=user, exercise=exercise)

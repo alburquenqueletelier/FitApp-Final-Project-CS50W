@@ -301,6 +301,7 @@ function menu_to_add(id, action='POST'){
         series.type = 'number'
         series.className = 'form-control';
         series.id = 'series';
+        series.required = true;
         label_series = document.createElement('label');
         label_series.htmlFor = 'series';
         label_series.innerText = 'N° Series';
@@ -310,6 +311,7 @@ function menu_to_add(id, action='POST'){
         reps.type = 'number'
         reps.className = 'form-control';
         reps.id = 'reps';
+        reps.required = true;
         label_reps = document.createElement('label');
         label_reps.innerText = 'N° Repeticiones';
         label_reps.htmlFor = 'reps';
@@ -340,6 +342,7 @@ function menu_to_add(id, action='POST'){
             div_form.querySelector('form').insertBefore(div_check, div_form.querySelector('div.row'));
         })
     }
+    // Carga la información del ejercicio en el formulario
     if (action=='PUT'){
         fetch('/exercises/info/'+id)
         .then(response => response.json())
@@ -359,9 +362,17 @@ function menu_to_add(id, action='POST'){
     }
     div_form.style.display = "block";
     submit = div_form.querySelector('form');
-    submit.addEventListener('submit', () => {
-        add_exercise(id, action);
-        // window.location.reload();
+    checkboxes = document.querySelectorAll('input[type="checkbox"]');
+    // Se procesa el submit con validación previa.
+    submit.addEventListener('submit', (event) => {
+        event.preventDefault();
+        checkedOne = Array.prototype.slice.call(checkboxes).some(x => x.checked);
+        if (checkedOne){
+            add_exercise(id, action);
+        } else {
+            alert("You must fill at least one day");
+        }
+        return false;
     });
 }
 
@@ -398,8 +409,8 @@ function add_exercise(id, action='POST'){
         })
     })
     .then(response => response.json())
-    .then(status => {
-        console.log(status);
+    .then(response => {
+        alert(response.message);
     })
     .catch(error => {
         console.log(error);
@@ -407,11 +418,9 @@ function add_exercise(id, action='POST'){
 }
 
 function remove_exercise(id){
-    fetch('/exercises/remove/'+id, {
-        method: 'POST'
-    })
+    fetch('/exercises/remove/'+id)
     .then(response => response.json())
-    .then(response => console.log(response))
+    .then(response => alert(response.message))
     .catch(error => console.log(error))
 }
 
