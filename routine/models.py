@@ -75,6 +75,24 @@ class Box_exercise(models.Model):
             "day":[d.name for d in self.day.all()]
         }
     
+class Tracker(models.Model):
+
+    owner = models.ForeignKey(Box_exercise, on_delete=models.CASCADE)
+    reps = models.IntegerField(blank=True, validators=[MinValueValidator(1,'Enter # greater than 0'), MaxValueValidator(100,'Enter # less than 100')])
+    series = models.IntegerField(blank=True, validators=[MinValueValidator(1,'Enter # greater than 0'), MaxValueValidator(30,'Enter # less than 30')])
+    register_date = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.owner.exercise.name}"
+
+    def serialize(self):
+        return {
+            "owner" : self.owner.exercise.name,
+            "reps" : self.reps,
+            "series" : self.series,
+            "date" : self.date
+        }
+
 
 class Plan(models.Model):
 

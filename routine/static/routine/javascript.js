@@ -154,11 +154,15 @@ function load_page(event){
         case 'results':
             // Carga pagina de resultados
             // La idea es poder ver los ejercicios agregados, registrar el maximal por fecha
-            document.querySelector('#div_results').innerHTML = `
-            <h1> Pagina en construcción ! </h1>
-            `;
+            div_results = document.querySelector('#div_results');
+            fetch('/plan')
+            then(response => response.json())
+            then(data => {
+                console.log(data);
+            })
+            .catch(error => console.log(error))
             break;
-            case 'others':
+        case 'others':
             document.querySelector('#div_others').innerHTML = `
             <h1> Pagina en construcción ! </h1>
             `;
@@ -263,7 +267,11 @@ function week_info(){
             data.exercises.forEach(exercise => {
                 if (exercise.day.includes(diassemana[i])){
                     li = document.createElement('li');
-                    li.innerText = `${exercise.exercise.name}`;
+                    li.innerHTML = `
+                    <p class='close'><strong>${exercise.exercise.name}</strong></p>
+                    <p class='close'>Series: ${exercise.series}</p>
+                    <p class='close'>Reps: ${exercise.reps}</p>
+                    `;
                     celda.className = 'bg-info';
                     lista.appendChild(li);
                     celda.appendChild(lista);
@@ -421,6 +429,15 @@ function remove_exercise(id){
     fetch('/exercises/remove/'+id)
     .then(response => response.json())
     .then(response => alert(response.message))
+    .catch(error => console.log(error))
+}
+
+function track_result(id_dia){
+    fetch()
+    .then(response => response.json())
+    .then(data => {
+
+    })
     .catch(error => console.log(error))
 }
 

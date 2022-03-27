@@ -32,6 +32,10 @@
   z-index: 9;
 }
 
+p.close {
+  line-height: 50%;
+}
+
 /* Add styles to the form container */
 .form-container {
   max-width: 100%;

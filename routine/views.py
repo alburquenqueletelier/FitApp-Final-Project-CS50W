@@ -181,11 +181,17 @@ def load_plan(request, id=None):
     plan = Plan.objects.get(owner=user)
     all_box = plan.exercises.all()
     box_serialize = []
+    all_tracker = []
     for box in all_box:
         box_serialize.append(box.serialize())
+        tracker = Tracker.objects.filter(owner=box)
+        if tracker:
+            for t in tracker:
+                all_tracker.append(t.serialize())
     data = {
         "plan":plan.serialize(),
-        "exercises":box_serialize
+        "exercises":box_serialize,
+        "tracker" : all_tracker
     }
     return JsonResponse(data, status=201)
 
