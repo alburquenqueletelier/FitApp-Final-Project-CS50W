@@ -72,6 +72,10 @@ p.close {
   opacity: 1;
 }
 
+li.list_exercises{
+  cursor: pointer;
+}
+
 #form-add-h1 {
   color: red;
 }

@@ -21,7 +21,6 @@ document.addEventListener('DOMContentLoaded', () => {
 })
 //Arrays de datos:
 // Copiados de la pagina mencionada al final del script
-var meses=["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
 var lasemana=["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"];
 var diassemana=["Lunes","Martes","Miércoles","Jueves","Viernes","Sábado","Domingo"];
 
@@ -110,7 +109,7 @@ function load_page(event){
                             button.className = 'btn btn-warning mt-2 me-2';
                             button.onclick = () => menu_to_add(button.dataset.id, 'PUT');
                             remove_button = document.createElement('button');
-                            remove_button.id = 'remove_button';
+                            remove_button.id = `remove_button${exercise.exercise.id}`;
                             remove_button.className = 'btn btn-danger mt-2';
                             remove_button.innerText = 'Remove exercise';
                             remove_button.onclick = () => remove_exercise(button.dataset.id);
@@ -155,10 +154,80 @@ function load_page(event){
             // Carga pagina de resultados
             // La idea es poder ver los ejercicios agregados, registrar el maximal por fecha
             div_results = document.querySelector('#div_results');
+            div_results.innerHTML = `<h2> Track Your Results ! </h2>`;
             fetch('/plan')
-            then(response => response.json())
-            then(data => {
-                console.log(data);
+            .then(response => response.json())
+            .then(data => {
+                // console.log(data);
+                div_tracker = document.createElement('div');
+                div_tracker.className = 'table-responsive';
+                div_tracker.innerHTML = `
+                    <table id="table_tracker" class="table table-bordered">
+                        <thead>
+                            <tr class="table-success text-center">
+                                <th>Exercise</th>
+                                <th>Original Series</th>
+                                <th>Original Reps</th>
+                                <th>Last Series</th>
+                                <th>Last Reps</th>
+                                <th>Enter Series</th>
+                                <th>Enter Reps</th>
+                                <th>All register<th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+                `;
+                var tbody = div_tracker.querySelector('#table_tracker');
+                tbody = tbody.querySelector('tbody');
+                data.exercises.forEach(exercise => {
+                    console.log(data);
+                    tr = tbody.insertRow();
+                    for (i=0;i<8;i++){
+                        td = tr.insertCell();
+                        switch (i){
+                            case 0:
+                                td.appendChild(document.createTextNode(`${exercise.exercise.name}`));
+                                break;
+                            case 1:
+                                td.appendChild(document.createTextNode(`${exercise.series}`));
+                                break;
+                            case 2:
+                                td.appendChild(document.createTextNode(`${exercise.reps}`));
+                                break;
+                            case 3:
+                                td.appendChild(document.createTextNode(`${exercise.exercise.name}`));
+                                break;
+                            case 4:
+                                td.appendChild(document.createTextNode(`${exercise.exercise.name}`));
+                                break;
+                            case 5:
+                                td.appendChild(document.createTextNode(`${exercise.exercise.name}`));
+                                break;
+                            case 6:
+                                td.appendChild(document.createTextNode(`${exercise.exercise.name}`));
+                                break;
+                            case 7:
+                                td.appendChild(document.createTextNode(`${exercise.exercise.name}`));
+                                break;
+                                
+                        }
+                    }
+                    // tr = document.createElement('tr');
+                    // tr.innerHTML = `
+                    //     <td>${cont + ' ' + exercise.name}</td>
+                    //     <td>aaa</td>
+                    //     <td></td>
+                    //     <td></td>
+                    //     <td></td>
+                    //     <td></td>
+                    //     <td></td>
+                    //     <td></td>
+                    // `;
+                    tbody.appendChild(tr);
+                })
+                div_results.appendChild(div_tracker);
             })
             .catch(error => console.log(error))
             break;
@@ -207,49 +276,9 @@ function load_plan(data) {
             break;
      
         case 'month':
-             // Limpia el div calendario para que no se adjunte cada vez que dan click al boton
-            // div_calendario.innerHTML = '';
-            //fecha actual
-            // cuerpo();
-            // hoy=new Date(); //objeto fecha actual
-            // diasemhoy=hoy.getDay(); //dia semana actual
-            // diahoy=hoy.getDate(); //dia mes actual
-            // meshoy=hoy.getMonth(); //mes actual
-            // annohoy=hoy.getFullYear(); //año actual
-            // // Elementos del DOM: en cabecera de calendario 
-            // tit=document.getElementById("titulos"); //cabecera del calendario
-            // ant=document.getElementById("anterior"); //mes anterior
-            // pos=document.getElementById("posterior"); //mes posterior
-            // // Elementos del DOM en primera fila
-            // f0=document.getElementById("fila0");
-            // //Pie de calendario
-            // pie=document.getElementById("fechaactual");
-            // pie.innerHTML+=lasemana[diasemhoy]+", "+diahoy+" de "+meses[meshoy]+" de "+annohoy;
-            // //formulario: datos iniciales:
-            // document.buscar.buscaanno.value=annohoy;
-            // // Definir elementos iniciales:
-            // mescal = meshoy; //mes principal
-            // annocal = annohoy; //año principal
-            // //iniciar calendario:
-            // window.onload = () => {
-            //     cabecera(); 
-            //     primeralinea();
-            //     escribirdias();
-            // }
             div_calendario.innerHTML = '<h1>Esta sección esta en desarrollo!</h1>';
             break;
     }
-}
-
-// Genera el calendario para la planificación semanal
-function cuerpo_semana(){
-    dias = document.querySelector('#dias');
-    dias = dias.querySelectorAll('td');
-    int = 0;
-    dias.forEach(dia => {
-        dia.innerHTML = `${diassemana[int]}`;
-        int+=1;
-    })
 }
 
 function week_info(){
@@ -267,11 +296,16 @@ function week_info(){
             data.exercises.forEach(exercise => {
                 if (exercise.day.includes(diassemana[i])){
                     li = document.createElement('li');
+                    li.id = `li${exercise.exercise.id}`;
+                    li.className = 'list_exercises';
                     li.innerHTML = `
                     <p class='close'><strong>${exercise.exercise.name}</strong></p>
                     <p class='close'>Series: ${exercise.series}</p>
                     <p class='close'>Reps: ${exercise.reps}</p>
                     `;
+                    li.onclick = () => {
+                        menu_to_add(exercise.exercise.id, 'PUT');
+                    }
                     celda.className = 'bg-info';
                     lista.appendChild(li);
                     celda.appendChild(lista);
@@ -302,8 +336,11 @@ function menu_to_add(id, action='POST'){
     // Boton submit que se añade al final
     let submit = div_form.querySelector('#submit_form');
     if (div_form.style.display == 'none'){
-        // fetch()
-        div_form.querySelector('h1').innerHTML = `Add <strong id="form-add-h1">${document.querySelector(`#heading${id}`).innerText}</strong>`;
+        if (document.querySelector(`#heading${id}`)){
+            div_form.querySelector('h1').innerHTML = `Add <strong id="form-add-h1">${document.querySelector(`#heading${id}`).innerText}</strong>`;
+        } else {
+            div_form.querySelector('h1').innerHTML = `Add <strong id="form-add-h1">${document.querySelector(`#li${id}`).innerText}</strong>`;
+        }
         // Input para numero de series
         series = document.createElement('input');
         series.type = 'number'
@@ -352,6 +389,30 @@ function menu_to_add(id, action='POST'){
     }
     // Carga la información del ejercicio en el formulario
     if (action=='PUT'){
+        // Se añade botton para eliminar solo sí ya está agregado el ejercicio
+        // remove_button = document.createElement('button');
+        // remove_button.onclick = () => {remove_exercise(id)}
+        // remove_button.className = 'btn cancel';
+        // remove_button.innerText = 'Remove Exercise';
+        // remove_button.style.width = 'fit-content';
+        // div_row = document.createElement('div');
+        // div_row.id = 'remove_button';
+        // div_row.className = 'row mt1 justify-content-center';
+        // div_col = document.createElement('div');
+        // div_col.className = 'col-auto';
+        // div_col.appendChild(remove_button);
+        // div_row.appendChild(div_col);
+        // div_form.querySelector('form').appendChild(div_row);
+        // div_form.querySelector('form').insertAfter(div_row, div_form.querySelector('div.row'));
+        delete_button = document.createElement('button');
+        delete_button.id = 'delete_button';
+        delete_button.className = 'btn danger mt-2';
+        delete_button.innerText = 'Remove Exercise';
+        delete_button.onclick = (event) => {
+            event.preventDefault();
+            remove_exercise(id);
+        }
+        div_form.querySelector('div.row').insertAdjacentElement("afterend", delete_button);
         fetch('/exercises/info/'+id)
         .then(response => response.json())
         .then(data => {
@@ -393,6 +454,9 @@ function close_menu_to_add(){
     delete_check.forEach(div => {
         form.removeChild(div);
     })
+    if (div_form.querySelector('#remove_button')){
+        div_form.removeChild('#remove_button');
+    }
     div_form.style.display = "none";
 }
 
@@ -432,18 +496,18 @@ function remove_exercise(id){
     .catch(error => console.log(error))
 }
 
-function track_result(id_dia){
-    fetch()
-    .then(response => response.json())
-    .then(data => {
-
-    })
-    .catch(error => console.log(error))
-}
-
-
 // ########################################################### //
 
+// Genera el calendario para la planificación semanal
+// function cuerpo_semana(){
+//     dias = document.querySelector('#dias');
+//     dias = dias.querySelectorAll('td');
+//     int = 0;
+//     dias.forEach(dia => {
+//         dia.innerHTML = `${diassemana[int]}`;
+//         int+=1;
+//     })
+// }
 //FUNCIONES de creación del calendario:
 // //cabecera del calendario
 // function cuerpo_mes() {

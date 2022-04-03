@@ -27,7 +27,7 @@ class Exercise(models.Model):
     primary_muscles = models.ManyToManyField(Muscle, related_name="primary")
     secondary_muscles = models.ManyToManyField(Muscle, related_name="secondary")
     imagen = models.ImageField(upload_to='images', default='images', blank=True)
-    video = models.FileField(upload_to="video", blank=True)
+    video = models.FileField(upload_to="video", default='videos', blank=True)
     register_date = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -90,7 +90,7 @@ class Tracker(models.Model):
             "owner" : self.owner.exercise.name,
             "reps" : self.reps,
             "series" : self.series,
-            "date" : self.date
+            "date" : self.register_date
         }
 
 
