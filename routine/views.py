@@ -195,6 +195,26 @@ def load_plan(request, id=None):
     }
     return JsonResponse(data, status=201)
 
+@csrf_exempt
+@login_required
+def upload_track(request, id):
+    if request.method != 'PUT':
+        return JsonResponse({"error": "Bad Request"}, status=400)
+    
+    data_put = json.loads(request.body)
+    series = data_put.get('series')
+    reps = data_put.get('reps')
+
+    exercise = Exercise.objects.get(id=id)
+    user = request.user
+    box_exercise = Box_exercise.objects.get(owner=user, exercise=exercise)
+    tracker = Tracker.objects.create(owner=box_exercise, reps=reps, series=series)
+    tracker.save()
+    return JsonResponse({'message':'Se actualizo los resultados de tu ejercicio'}, status=201)
+
+def users_list(request):
+    users = User.objects.exclude(username = request.user)
+    return JsonResponse([user.serialize() for user in users], safe=False)
 
 # API para cargar información de la planificación y resultados
 

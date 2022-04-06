@@ -20,7 +20,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
 })
 //Arrays de datos:
-// Copiados de la pagina mencionada al final del script
 var lasemana=["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"];
 var diassemana=["Lunes","Martes","Miércoles","Jueves","Viernes","Sábado","Domingo"];
 
@@ -182,7 +181,7 @@ function load_page(event){
                 var tbody = div_tracker.querySelector('#table_tracker');
                 tbody = tbody.querySelector('tbody');
                 data.exercises.forEach(exercise => {
-                    console.log(data);
+                    // console.log(data);
                     tr = tbody.insertRow();
                     for (i=0;i<8;i++){
                         td = tr.insertCell();
@@ -197,44 +196,112 @@ function load_page(event){
                                 td.appendChild(document.createTextNode(`${exercise.reps}`));
                                 break;
                             case 3:
-                                td.appendChild(document.createTextNode(`${exercise.exercise.name}`));
+                                info_series = new Object();
+                                data.tracker.forEach(track => {
+                                    if(exercise.exercise.name == track.owner){
+                                        info_series[`${exercise.exercise.name}`] = track.series;
+                                    } 
+                                })
+                                if (Object.keys(info_series).length === 0){
+                                    info_series[`${exercise.exercise.name}`] = '-';
+                                }
+                                td.appendChild(document.createTextNode(info_series[`${exercise.exercise.name}`]));
                                 break;
                             case 4:
-                                td.appendChild(document.createTextNode(`${exercise.exercise.name}`));
+                                info_reps = new Object();
+                                data.tracker.forEach(track => {
+                                    if(exercise.exercise.name == track.owner){
+                                        info_reps[`${exercise.exercise.name}`] = track.reps;
+                                    } 
+                                })
+                                if (Object.keys(info_reps).length === 0){
+                                    info_reps[`${exercise.exercise.name}`] = '-';
+                                }
+                                td.appendChild(document.createTextNode(info_reps[`${exercise.exercise.name}`]));
                                 break;
                             case 5:
-                                td.appendChild(document.createTextNode(`${exercise.exercise.name}`));
+                                td.innerHTML = `
+                                    <form class="form-inline series">
+                                        <div class="form-group row">
+                                            <div class="col">
+                                                <input required class="form-control" type="number">
+                                            </div>
+                                            <div class="col">
+                                                <input class="form-control" type="submit" value="Save">
+                                            </div>
+                                        </div>
+                                        <input type="hidden" name="id_exercise" value="${exercise.exercise.id}">
+                                    </form>
+                                `;
                                 break;
                             case 6:
-                                td.appendChild(document.createTextNode(`${exercise.exercise.name}`));
+                                td.innerHTML = `
+                                <form class="form-inline reps">
+                                    <div class="form-group row">
+                                        <div class="col">
+                                            <input required class="form-control" type="number">
+                                        </div>
+                                        <div class="col">
+                                            <input class="form-control" type="submit" value="Save">
+                                        </div>
+                                    </div>
+                                    <input type="hidden" name="id_exercise" value="${exercise.exercise.id}">
+                                </form>
+                                `;
                                 break;
                             case 7:
-                                td.appendChild(document.createTextNode(`${exercise.exercise.name}`));
+                                all_regs = document.createElement('button');
+                                all_regs.innerText = 'Click';
+                                all_regs.addEventListener('click', () => {
+                                    alert('Pagina en construcción !');
+                                })
+                                td.appendChild(all_regs);
                                 break;
                                 
                         }
                     }
-                    // tr = document.createElement('tr');
-                    // tr.innerHTML = `
-                    //     <td>${cont + ' ' + exercise.name}</td>
-                    //     <td>aaa</td>
-                    //     <td></td>
-                    //     <td></td>
-                    //     <td></td>
-                    //     <td></td>
-                    //     <td></td>
-                    //     <td></td>
-                    // `;
                     tbody.appendChild(tr);
                 })
                 div_results.appendChild(div_tracker);
+                all_forms = div_results.querySelectorAll('form');
+                all_forms.forEach(form => {
+                    form.addEventListener('submit', (event) => {
+                        event.preventDefault();
+                        if (form.querySelector('input').value <= 0 || form.querySelector('input').value <= 0){
+                            alert('error: series and reps must be greater than 0');
+                            return false;
+                        }
+                        if (form.querySelector('input').type != 'number' || form.querySelector('input').type != 'number'){
+                            alert('error: series and reps must be numeric');
+                            return false;
+                        }
+                        value_series = form.querySelector('input').value;
+                        value_reps = form.querySelector('input').value;
+                        id_exercise = form.querySelector('input[name="id_exercise"]').value;
+                        upload_track(id_exercise, value_series, value_reps);
+                        return false;
+                    })
+                })
             })
             .catch(error => console.log(error))
             break;
         case 'others':
-            document.querySelector('#div_others').innerHTML = `
-            <h1> Pagina en construcción ! </h1>
-            `;
+            div_others = document.querySelector('#div_others');
+            div_others.innerHTML = '<h1>View of other users tracker</h1>'
+            fetch('/users')
+            .then(response => response.json())
+            .then(users => {
+                ul = document.createElement('ul');
+                users.forEach(user => {
+                    console.log(user);
+                    li = document.createElement('li');
+                    li.innerHTML = `<a href="#">${user.name}</a>`;
+                    ul.appendChild(li);
+                })
+                div_others.appendChild(ul);
+            })
+            .catch(error => console.log(error))
+            break;
     }
 }
 
@@ -423,7 +490,7 @@ function menu_to_add(id, action='POST'){
                     document.querySelector(`#${day}`).checked = true;
                 }
             })
-            console.log(data);
+            // console.log(data);
         })
         .catch(error => {
             console.log(error);
@@ -496,182 +563,15 @@ function remove_exercise(id){
     .catch(error => console.log(error))
 }
 
-// ########################################################### //
-
-// Genera el calendario para la planificación semanal
-// function cuerpo_semana(){
-//     dias = document.querySelector('#dias');
-//     dias = dias.querySelectorAll('td');
-//     int = 0;
-//     dias.forEach(dia => {
-//         dia.innerHTML = `${diassemana[int]}`;
-//         int+=1;
-//     })
-// }
-//FUNCIONES de creación del calendario:
-// //cabecera del calendario
-// function cuerpo_mes() {
-//     const div_calendario = document.querySelector('#calendario');
-//     // Instrucciones para que el usuario pueda utilizar la app
-//     div_calendario.innerHTML = `
-//         <div id="anterior" onclick="mesantes()"></div>
-//         <div id="posterior" onclick="mesdespues()"></div>
-//         <h2 id="titulos"></h2>
-//         <table id="diasc">
-//             <tr id="fila0"><th></th><th></th><th></th><th></th><th></th><th></th><th></th></tr>
-//             <tr id="fila1"><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-//             <tr id="fila2"><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-//             <tr id="fila3"><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-//             <tr id="fila4"><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-//             <tr id="fila5"><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-//             <tr id="fila6"><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-//         </table>
-//         <div id="fechaactual"><i onclick="actualizar()">HOY: </i></div>
-//         <div id="buscafecha">
-//             <form action="#" name="buscar">
-//                 <p>Buscar ... MES
-//                     <select name="buscames">
-//                     <option value="0">Enero</option>
-//                     <option value="1">Febrero</option>
-//                     <option value="2">Marzo</option>
-//                     <option value="3">Abril</option>
-//                     <option value="4">Mayo</option>
-//                     <option value="5">Junio</option>
-//                     <option value="6">Julio</option>
-//                     <option value="7">Agosto</option>
-//                     <option value="8">Septiembre</option>
-//                     <option value="9">Octubre</option>
-//                     <option value="10">Noviembre</option>
-//                     <option value="11">Diciembre</option>
-//                     </select>
-//                 ... AÑO ...
-//                     <input type="text" name="buscaanno" maxlength="4" size="4" />
-//                 ... 
-//                     <input type="button" value="BUSCAR" onclick="mifecha()" />
-//                 </p>
-//             </form>
-//         </div>
-//         `;
-// }
-
-// function cabecera() {
-//     tit.innerHTML=meses[mescal]+" de "+annocal;
-//     mesant=mescal-1; //mes anterior
-//     mespos=mescal+1; //mes posterior
-//     if (mesant<0) {mesant=11;}
-//     if (mespos>11) {mespos=0;}
-//     ant.innerHTML=meses[mesant]
-//     pos.innerHTML=meses[mespos]
-//     } 
-// //primera línea de tabla: días de la semana.
-// function primeralinea() {
-//     for (i=0;i<7;i++) {
-//         celda0=f0.getElementsByTagName("th")[i];
-//         celda0.innerHTML=diassemana[i]
-//         }
-//     }
-// //rellenar celdas con los días
-// function escribirdias() {
-//     //Buscar dia de la semana del dia 1 del mes:
-//     primeromes=new Date(annocal,mescal,"1") //buscar primer día del mes
-//     prsem=primeromes.getDay() //buscar día de la semana del día 1
-//     prsem--; //adaptar al calendario español (empezar por lunes)
-//     if (prsem==-1) {prsem=6;}
-//     //buscar fecha para primera celda:
-//     diaprmes=primeromes.getDate() 
-//     prcelda=diaprmes-prsem; //restar días que sobran de la semana
-//     empezar=primeromes.setDate(prcelda) //empezar= tiempo UNIX 1ª celda
-//     diames=new Date() //convertir en fecha
-//     diames.setTime(empezar); //diames=fecha primera celda.
-//     //Recorrer las celdas para escribir el día:
-//     for (i=1;i<7;i++) { //localizar fila
-//         fila=document.getElementById("fila"+i);
-//         for (j=0;j<7;j++) {
-//             midia=diames.getDate() 
-//             mimes=diames.getMonth()
-//             mianno=diames.getFullYear()
-//             celda=fila.getElementsByTagName("td")[j];
-//             celda.innerHTML=midia;
-//             //Recuperar estado inicial al cambiar de mes:
-//             celda.style.backgroundColor="#9bf5ff";
-//             celda.style.color="#492736";
-//             //dias restantes del mes en gris
-//             if (mimes!=mescal) { 
-//                celda.style.color="#a0babc";
-//                }
-//             //destacar la fecha actual
-//             if (mimes==meshoy && midia==diahoy && mianno==annohoy ) { 
-//                celda.style.backgroundColor="#f0b19e";
-//                celda.innerHTML="<cite title='Fecha Actual'>"+midia+"</cite>";
-//                }
-//             // Se agrega función click para permitir añadir ejercicio
-//             celda.onclick = ()=> {
-                
-//             }
-//             //pasar al siguiente día
-//             midia=midia+1;
-//             diames.setDate(midia);
-//             }
-//         }
-//     }
-
-
-// //Ver mes anterior
-// function mesantes() {
-//     nuevomes=new Date() //nuevo objeto de fecha
-//     primeromes--; //Restamos un día al 1 del mes visualizado
-//     nuevomes.setTime(primeromes) //cambiamos fecha al mes anterior 
-//     mescal=nuevomes.getMonth() //cambiamos las variables que usarán las funciones
-//     annocal=nuevomes.getFullYear()
-//     cabecera() //llamada a funcion de cambio de cabecera
-//     escribirdias() //llamada a funcion de cambio de tabla.
-//     }
-// //ver mes posterior
-// function mesdespues() {
-//     nuevomes=new Date() //nuevo obejto fecha
-//     tiempounix=primeromes.getTime() //tiempo de primero mes visible
-//     tiempounix=tiempounix+(45*24*60*60*1000) //le añadimos 45 días 
-//     nuevomes.setTime(tiempounix) //fecha con mes posterior.
-//     mescal=nuevomes.getMonth() //cambiamos variables 
-//     annocal=nuevomes.getFullYear()
-//     cabecera() //escribir la cabecera 
-//     escribirdias() //escribir la tabla
-//     }
-// //volver al mes actual
-// function actualizar() {
-//     mescal=hoy.getMonth(); //cambiar a mes actual
-//     annocal=hoy.getFullYear(); //cambiar a año actual 
-//     cabecera() //escribir la cabecera
-//     escribirdias() //escribir la tabla
-//     }
-// //ir al mes buscado
-// function mifecha() {
-//     //Recoger dato del año en el formulario
-//     mianno=document.buscar.buscaanno.value; 
-//     //recoger dato del mes en el formulario
-//     listameses=document.buscar.buscames;
-//     opciones=listameses.options;
-//     num=listameses.selectedIndex
-//     mimes=opciones[num].value;
-//     //Comprobar si el año está bien escrito
-//     if (isNaN(mianno) || mianno<1) { 
-//        //año mal escrito: mensaje de error
-//        alert("El año no es válido:\n debe ser un número mayor que 0")
-//        }
-//     else { //año bien escrito: ver mes en calendario:
-//          mife=new Date(); //nueva fecha
-//          mife.setMonth(mimes); //añadir mes y año a nueva fecha
-//          mife.setFullYear(mianno);
-//          mescal=mife.getMonth(); //cambiar a mes y año indicados
-//          annocal=mife.getFullYear();
-//          cabecera() //escribir cabecera
-//          escribirdias() //escribir tabla
-//          }
-//     }
-
-// https://aprende-web.net/jspracticas/tiempo/cod5.html
-// Se utiliza el codigo fuente de este repositorio para generar
-// calendario de planificación. Desde la estructura hasta la funcionalidad
-// estan implementadas en javascript ! Se modifican aspectos y 
-// características que permitan al usuario manipular la planificación
-// según lo estipulado en la descripción de la pagina.
+function upload_track(id, val_series, val_reps){
+    fetch('/exercises/track/'+id, {
+        method: 'PUT',
+        body: JSON.stringify({
+            series: val_series,
+            reps: val_reps
+        })
+    })
+    .then(response => response.json())
+    .then(response => alert(response.message))
+    .catch(error => console.log(error))
+}
