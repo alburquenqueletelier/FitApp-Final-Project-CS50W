@@ -9,14 +9,26 @@ document.addEventListener('DOMContentLoaded', () => {
         if (button.id != 'close_form' && button.id != 'submit_form'){
             button.addEventListener('click', () => {
                 if (document.querySelector('#myForm').style.display == 'block'){
+                    history.pushState({state : `${button.id}`}, `${button.id}`, `${button.id}`);
                     close_menu_to_add();
                     load_page(button.id);
                 } else {
                     load_page(button.id);
+                    history.pushState({state : `${button.id}`}, `${button.id}`, `${button.id}`);
                 }
             })
         } 
     })
+
+    window.onpopstate = function(event) {
+        event.preventDefault;
+        page = event.state.state;
+        if (document.querySelector('#myForm').style.display == 'block'){
+            close_menu_to_add();
+        }
+        load_page(page);
+        console.log(page);
+      }
 
 })
 //Arrays de datos:
@@ -171,7 +183,7 @@ function load_page(event){
                                 <th>Last Reps</th>
                                 <th>Enter Series</th>
                                 <th>Enter Reps</th>
-                                <th>All register<th>
+                                <th>All register</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -287,7 +299,8 @@ function load_page(event){
             break;
         case 'others':
             div_others = document.querySelector('#div_others');
-            div_others.innerHTML = '<h1>View of other users tracker</h1>'
+            div_others.innerHTML = '<h1>View of other users tracker</h1>';
+            url_results = window.location.href;
             fetch('/users')
             .then(response => response.json())
             .then(users => {
@@ -295,7 +308,7 @@ function load_page(event){
                 users.forEach(user => {
                     console.log(user);
                     li = document.createElement('li');
-                    li.innerHTML = `<a href="#">${user.name}</a>`;
+                    li.innerHTML = `<a href="${url_results}routine/${user.name}">${user.name}</a>`;
                     ul.appendChild(li);
                 })
                 div_others.appendChild(ul);

@@ -8,6 +8,7 @@ urlpatterns = [
     path("login", views.login_view, name="login"),
     path("logout", views.logout_view, name="logout"),
     path("register", views.register, name="register"),
+    path("routine/<str:name>", views.others_page, name="others_page"),
 
     ## API ##
     path("users", views.users_list, name="users_list"),
@@ -17,6 +18,7 @@ urlpatterns = [
     path("exercises/info/<int:id>", views.info_exercise, name="info_exercise"),
     path("exercises/remove/<int:id>", views.remove_exercise, name="remove_exercise"),
     path("exercises/track/<int:id>", views.upload_track, name="upload_track"),
-    path("plan", views.load_plan, name="load_plan")
+    path("plan", views.load_plan, name="load_plan"),
+    path("plan/<str:name>", views.load_plan, name="load_plan_specific")
     # path("calendar_view", views.calendar_view, name="calendar_view")
 ]

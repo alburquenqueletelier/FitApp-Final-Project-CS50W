@@ -174,10 +174,13 @@ def info_exercise(request, id):
 # API para cargar ejercicios de la planificación
 @csrf_exempt
 @login_required
-def load_plan(request, id=None):
+def load_plan(request, name=None):
     if request.method != 'GET':
         return JsonResponse({"error": "Bad Request"}, status=400)
-    user = request.user
+    if name:
+        user = User.objects.get(username=name)
+    else:
+        user = request.user
     plan = Plan.objects.get(owner=user)
     all_box = plan.exercises.all()
     box_serialize = []
@@ -215,6 +218,9 @@ def upload_track(request, id):
 def users_list(request):
     users = User.objects.exclude(username = request.user)
     return JsonResponse([user.serialize() for user in users], safe=False)
+
+def others_page(request, name):
+    return render(request, "routine/others.html")
 
 # API para cargar información de la planificación y resultados
 
