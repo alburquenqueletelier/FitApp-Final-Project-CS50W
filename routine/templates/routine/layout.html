@@ -13,7 +13,17 @@
     </head>
     <body>
         <div class="container m-auto mt-3 p-3 border">
-            <h1 id="title" class="text-center"> Welcome to The Change </h1>
+            <div class="row align-items-center">
+                <div class="col-auto">
+                    <img class="img-responsive" src="{% static 'routine/logo.png' %}"></img>
+                </div>
+                <div class="col">
+                    <h1 id="title" class="text-center"> CALIROAD Welcome to The Change </h1>
+                </div>
+                <div class="col-auto">
+                    <img class="img-responsive" src="{% static 'routine/logo.png' %}"></img>
+                </div>
+            </div>
             <div class="container-fluid">
                 <nav class="navbar navbar-expand-lg navbar-dark bg-dark m-3 p-3">
                     {% if user.is_superuser %}
@@ -32,6 +42,7 @@
                     {% endif %}
                 </nav>
             </div>
+            {{ request.user.username|json_script:"request_user" }}
             {% block body %}
             {% endblock %}
         </div>

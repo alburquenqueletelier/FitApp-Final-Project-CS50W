@@ -1,28 +1,26 @@
 document.addEventListener('DOMContentLoaded', () => {
 
-    // Genera funcionalidad de botones para cambio de menu
-    // Selecciona todos los botones para agregar funcionalidad
-    // al hacer click y activa la función para cargar pagina
-    // con un determinado id 
-    const buttons = document.querySelectorAll('button');
-    buttons.forEach(button => {
-        button.addEventListener('click', () => {
-            load_page(button.id);
-        })
-    })
-
     // Carga información de los resultados del usuario
     user = window.location.href;
     user = user.split('/');
     info = load_info(user.pop());
+    history.replaceState({state:'others'}, '', 'others');
 
     console.log(user);
-    go_back = document.querySelector('a');
+    go_back = document.querySelector('#goback');
     go_back.onclick = () => {
         history.back();
     }
 
 })
+
+// Devuelve al estado de la pagina anterior cuando se apreta el boton atras
+window.onpopstate = (event) => {
+    event.preventDefault();
+    window.location.replace('http://127.0.0.1:8000/');
+    load_page(event.state.state);
+
+}
 
 function load_info(name){
     fetch('/plan/'+name)

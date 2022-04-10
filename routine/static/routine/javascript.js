@@ -1,45 +1,51 @@
 document.addEventListener('DOMContentLoaded', () => {
     
-    // Genera funcionalidad de botones para cambio de menu
-    // Selecciona todos los botones para agregar funcionalidad
-    // al hacer click y activa la función para cargar pagina
-    // con un determinado id 
+    // Generate button functionality for menu change
+     // Select all buttons to add functionality
+     // on click and activate the function to load page
+     // with a certain id
     const buttons = document.querySelectorAll('button');
     buttons.forEach(button => {
         if (button.id != 'close_form' && button.id != 'submit_form'){
             button.addEventListener('click', () => {
-                if (document.querySelector('#myForm').style.display == 'block'){
-                    history.pushState({state : `${button.id}`}, `${button.id}`, `${button.id}`);
-                    close_menu_to_add();
-                    load_page(button.id);
-                } else {
-                    load_page(button.id);
-                    history.pushState({state : `${button.id}`}, `${button.id}`, `${button.id}`);
-                }
+                try {
+                    if (document.querySelector('#myForm').style.display == 'block'){
+                        close_menu_to_add();
+                    }
+                } catch (e) {}
+                history.pushState({state : `${button.id}`}, `${button.id}`, `${button.id}`);
+                load_page(button.id);
             })
         } 
     })
 
-    window.onpopstate = function(event) {
-        event.preventDefault;
-        page = event.state.state;
-        if (document.querySelector('#myForm').style.display == 'block'){
-            close_menu_to_add();
-        }
-        load_page(page);
-        console.log(page);
-      }
+    // By defautl load index
+    document.querySelector('#index').click();
+    history.pushState({state:'index'}, 'index', 'index');
 
 })
-//Arrays de datos:
+
+// Return to the state of the previous page when the back button is pressed
+window.onpopstate = function(event) {
+    event.preventDefault;
+    page = event.state.state;
+    if (document.querySelector('#myForm').style.display == 'block'){
+        close_menu_to_add();
+    }
+    load_page(page);
+    console.log(page);
+}
+
+//Arrays:
 var lasemana=["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"];
 var diassemana=["Lunes","Martes","Miércoles","Jueves","Viernes","Sábado","Domingo"];
-
-// funcion para cargar pagina
+// function to load page
+// Each button modifies the DOM as appropriate
 function load_page(event){
-
-    let request_user = JSON.parse(document.getElementById('request_user').textContent);
-    // Cambia el estado de display de los divs que contienen las paginas según corresponda
+    
+    // Request user from template
+    var request_user = JSON.parse(document.getElementById('request_user').textContent);
+    // Change the display state of the divs that contain the pages as appropriate
     let page = event;
     divs = document.querySelectorAll('div.page');
     divs.forEach(div => {
@@ -50,10 +56,10 @@ function load_page(event){
         }
     })
 
-    // Construye el material correspondiente a cada pagina
+    // Build the material corresponding to each page
     switch (page){
         case 'exercise':
-            // Se renderiza el acordion con todos los ejercicios recuperados con la API mediante el fetch
+            // The accordion is rendered with all the exercises retrieved with the API through the fetch
             const div_exercise = document.querySelector('#div_exercise');
             div_exercise.innerHTML = '<h2>Listado de ejercicios</h2>';
             fetch('/exercises')
@@ -64,7 +70,7 @@ function load_page(event){
                 div_accordion.id = 'accordionexercises';
                 div_accordion.className = 'accordion';
                 menu.forEach(exercise => {
-                    // console.log(exercise.imagen);
+                    console.log(exercise.imagen);
                     const div = document.createElement('div');
                     div.className = 'accordion-item';
                     div.innerHTML = `
@@ -96,6 +102,7 @@ function load_page(event){
                     `;
                     if (!request_user){
                         div.querySelector('button.btn-primary').style.display="none";
+                        div.querySelector('button.btn-primary').disabled=true;
                     }
                     div_accordion.appendChild(div);
                 })
@@ -104,51 +111,65 @@ function load_page(event){
             .catch(error => {
                 console.log(error);
             })
-            // Si ya esta agregado el ejercicio se cambia el button para que edite
-            // y se agrega boton para remover ejercicio
-            fetch('/plan', {
-                method: 'GET'
-            })
-            .then(response => response.json())
-            .then(data => {
-                add_buttons = document.querySelectorAll('button.btn-primary');
-                add_buttons.forEach(button => {
-                    data.exercises.forEach(exercise => {
-                        if(exercise.exercise.name == button.dataset.name){
-                            button.removeAttribute("onclick");
-                            button.innerText = 'Edit exercise';
-                            button.className = 'btn btn-warning mt-2 me-2';
-                            button.onclick = () => menu_to_add(button.dataset.id, 'PUT');
-                            remove_button = document.createElement('button');
-                            remove_button.id = `remove_button${exercise.exercise.id}`;
-                            remove_button.className = 'btn btn-danger mt-2';
-                            remove_button.innerText = 'Remove exercise';
-                            remove_button.onclick = () => remove_exercise(button.dataset.id);
-                            button.insertAdjacentElement("afterend", remove_button);
-                        }
-                    })
-                });
-            })
-            .catch(error => {
-                console.log(error);
-            })
+            // Load plan user info with fetch
+            // If the exercise is already added, the button is changed to edit
+             // and add button to remove exercise.
+            if (request_user){
+                fetch('/plan', {
+                    method: 'GET'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    add_buttons = document.querySelectorAll('button.btn-primary');
+                    add_buttons.forEach(button => {
+                        data.exercises.forEach(exercise => {
+                            if(exercise.exercise.name == button.dataset.name){
+                                button.removeAttribute("onclick");
+                                button.innerText = 'Edit exercise';
+                                button.className = 'btn btn-warning mt-2 me-2';
+                                button.onclick = () => menu_to_add(button.dataset.id, 'PUT');
+                                remove_button = document.createElement('button');
+                                remove_button.id = `remove_button${exercise.exercise.id}`;
+                                remove_button.className = 'btn btn-danger mt-2';
+                                remove_button.innerText = 'Remove exercise';
+                                remove_button.onclick = () => remove_exercise(button.dataset.id);
+                                button.insertAdjacentElement("afterend", remove_button);
+                            }
+                        })
+                    });
+                })
+                .catch(error => {
+                    console.log(error, request_user);
+                })
+            }
             break;
-        // Genera pagina de planificación
+        // Generate planning page
         case 'my_routine':
-            // Se despliega instrucciones y dos botones según planificacion deseada
-            // Actualmente solo funciona planificacion semanal
+            // Instructions and two buttons are displayed according to the desired planning
+             // Currently only weekly planning works
             document.querySelector('#div_my_routine').innerHTML = `
             <h2 class="text-center">Planificación de Rutina</h2>
             <h4 class="text-center">Arma tu rutina ! </h4>
             <p>Selecciona planificación semanal o mensual. Puedes registrar ambas, te ayudarán a tener mejor control sobre tus entrenamientos. A continuación se presenta el modo de uso: </p>
             <ol>
                 <li>Selecciona el tipo de planificación (semanal o mensual) para poder editar</li>
+                <del>
                 <li>Escoge el día que quieras entrenar</li>
                 <li>Elige la categoría de musculos a trabajar</li>
                 <li>Selecciona el ejercicio, numero de series y repeticiones</li>
                 <li>Cuando termines de agregar todos los ejercicios dale al boton guardar</li>
+                </del>
             </ol>
-            <p><strong>Hay un bug que se esta resolviendo que impide la carga completa del calendario. Selecciona el mes que deseas planificar y pincha el boton buscar para que cargue correctamente</strong></p>
+            <p>De momento solo funciona para ver tu rutina y editar o eliminar los ejercicios actualmente añadidos.</p>
+            <p> 
+            Si quieres <strong> AGREGAR más ejercicios </strong> debes hacerlo en la pestaña de ejercicios.
+            Para ello, realiza el paso 1 y luego
+            </p>
+            <ol>
+                <li>Selecciona el ejercicio que quieras modificar o eliminar</li>
+                <li>Modifica la información del formulario si quieres editar</li>
+                <li>Para eliminar puedes descarmar todos los días y enviar o presionar el boton remover ejercicio</li>
+            </ol>
             <div class="row justify-content-center"">
                 <div class="col-auto">
                     <button id="week" onclick="load_plan('week')">Semanal</button>
@@ -162,14 +183,16 @@ function load_page(event){
             `
             break;
         case 'results':
-            // Carga pagina de resultados
-            // La idea es poder ver los ejercicios agregados, registrar el maximal por fecha
+            // Load results page
+             // The idea is to be able to see the added exercises, record the maximal by date
+            //  and allow add new track to the exercise
             div_results = document.querySelector('#div_results');
             div_results.innerHTML = `<h2> Track Your Results ! </h2>`;
             fetch('/plan')
             .then(response => response.json())
             .then(data => {
                 // console.log(data);
+                // Create the table where the information will be displayed
                 div_tracker = document.createElement('div');
                 div_tracker.className = 'table-responsive';
                 div_tracker.innerHTML = `
@@ -192,6 +215,7 @@ function load_page(event){
                 `;
                 var tbody = div_tracker.querySelector('#table_tracker');
                 tbody = tbody.querySelector('tbody');
+                // Load the info to the Table
                 data.exercises.forEach(exercise => {
                     // console.log(data);
                     tr = tbody.insertRow();
@@ -232,6 +256,8 @@ function load_page(event){
                                 td.appendChild(document.createTextNode(info_reps[`${exercise.exercise.name}`]));
                                 break;
                             case 5:
+                                // Create a form to add a series record. 
+                                // It only allows sending information if the rep form is with information and vice versa
                                 td.innerHTML = `
                                     <form class="form-inline series">
                                         <div class="form-group row">
@@ -247,6 +273,7 @@ function load_page(event){
                                 `;
                                 break;
                             case 6:
+                                // Create a form to add a reps record. 
                                 td.innerHTML = `
                                 <form class="form-inline reps">
                                     <div class="form-group row">
@@ -262,6 +289,8 @@ function load_page(event){
                                 `;
                                 break;
                             case 7:
+                                // Button to see al the tracker of the exercise
+                                // not yet implemented
                                 all_regs = document.createElement('button');
                                 all_regs.innerText = 'Click';
                                 all_regs.addEventListener('click', () => {
@@ -275,6 +304,7 @@ function load_page(event){
                     tbody.appendChild(tr);
                 })
                 div_results.appendChild(div_tracker);
+                // Handling of forms. Conditions are added here
                 all_forms = div_results.querySelectorAll('form');
                 all_forms.forEach(form => {
                     form.addEventListener('submit', (event) => {
@@ -298,9 +328,11 @@ function load_page(event){
             .catch(error => console.log(error))
             break;
         case 'others':
+            // Load page with a list of all user except the request user
             div_others = document.querySelector('#div_others');
-            div_others.innerHTML = '<h1>View of other users tracker</h1>';
-            url_results = window.location.href;
+            div_others.innerHTML = '<h2>View of other users tracker</h2>';
+            // Fetch of all users and adds a link to visit a page 
+            // that allows you to see all the results of the selected user.
             fetch('/users')
             .then(response => response.json())
             .then(users => {
@@ -308,7 +340,7 @@ function load_page(event){
                 users.forEach(user => {
                     console.log(user);
                     li = document.createElement('li');
-                    li.innerHTML = `<a href="${url_results}routine/${user.name}">${user.name}</a>`;
+                    li.innerHTML = `<a href="routine/${user.name}">${user.name}</a>`;
                     ul.appendChild(li);
                 })
                 div_others.appendChild(ul);
@@ -318,11 +350,12 @@ function load_page(event){
     }
 }
 
-// Carga calendario semanal o mensual segun corresponda
+// Load weekly or monthly calendar as appropriate
 function load_plan(data) {
 
     div_calendario = document.querySelector('#calendario');
     switch (data){
+        // Load Weekly Calendar
         case 'week':
             div_calendario.innerHTML = `
             <div class="table-responsive">
@@ -356,6 +389,8 @@ function load_plan(data) {
             break;
      
         case 'month':
+            // Load monthly calendar
+            // currently under construction
             div_calendario.innerHTML = '<h1>Esta sección esta en desarrollo!</h1>';
             break;
     }
@@ -376,16 +411,14 @@ function week_info(){
             data.exercises.forEach(exercise => {
                 if (exercise.day.includes(diassemana[i])){
                     li = document.createElement('li');
-                    li.id = `li${exercise.exercise.id}`;
                     li.className = 'list_exercises';
                     li.innerHTML = `
-                    <p class='close'><strong>${exercise.exercise.name}</strong></p>
+                    <button  class="no-button" onclick="menu_to_add(${exercise.exercise.id}, 'PUT')">
+                    <p id="p${exercise.exercise.id}" class='close'><strong>${exercise.exercise.name}</strong></p>
+                    </button>
                     <p class='close'>Series: ${exercise.series}</p>
                     <p class='close'>Reps: ${exercise.reps}</p>
                     `;
-                    li.onclick = () => {
-                        menu_to_add(exercise.exercise.id, 'PUT');
-                    }
                     celda.className = 'bg-info';
                     lista.appendChild(li);
                     celda.appendChild(lista);
@@ -399,14 +432,6 @@ function week_info(){
     })
 }
 
-// Carga información del ejercicio si es que ya esta agregado a la rutina y así poder modificarlo
-// function load_exercise(id){
-//     fetch('/exercise/'+id)
-//     .then(response => response.json())
-//     .then(exercise => {
-
-//     })
-// }
 
 // Genera el menu para añadir ejercicio, reps y series a los días seleccionados
 // Recoge div contenedor desde HTML y crea los elementos del formulario para luego ser apendd.
@@ -419,7 +444,7 @@ function menu_to_add(id, action='POST'){
         if (document.querySelector(`#heading${id}`)){
             div_form.querySelector('h1').innerHTML = `Add <strong id="form-add-h1">${document.querySelector(`#heading${id}`).innerText}</strong>`;
         } else {
-            div_form.querySelector('h1').innerHTML = `Add <strong id="form-add-h1">${document.querySelector(`#li${id}`).innerText}</strong>`;
+            div_form.querySelector('h1').innerHTML = `Add <strong id="form-add-h1">${document.querySelector(`#p${id}`).innerText}</strong>`;
         }
         // Input para numero de series
         series = document.createElement('input');
@@ -469,30 +494,17 @@ function menu_to_add(id, action='POST'){
     }
     // Carga la información del ejercicio en el formulario
     if (action=='PUT'){
-        // Se añade botton para eliminar solo sí ya está agregado el ejercicio
-        // remove_button = document.createElement('button');
-        // remove_button.onclick = () => {remove_exercise(id)}
-        // remove_button.className = 'btn cancel';
-        // remove_button.innerText = 'Remove Exercise';
-        // remove_button.style.width = 'fit-content';
-        // div_row = document.createElement('div');
-        // div_row.id = 'remove_button';
-        // div_row.className = 'row mt1 justify-content-center';
-        // div_col = document.createElement('div');
-        // div_col.className = 'col-auto';
-        // div_col.appendChild(remove_button);
-        // div_row.appendChild(div_col);
-        // div_form.querySelector('form').appendChild(div_row);
-        // div_form.querySelector('form').insertAfter(div_row, div_form.querySelector('div.row'));
-        delete_button = document.createElement('button');
-        delete_button.id = 'delete_button';
-        delete_button.className = 'btn danger mt-2';
-        delete_button.innerText = 'Remove Exercise';
-        delete_button.onclick = (event) => {
-            event.preventDefault();
-            remove_exercise(id);
+        if (!document.querySelector('#delete_button')){
+            delete_button = document.createElement('button');
+            delete_button.id = 'delete_button';
+            delete_button.className = 'btn danger mt-2';
+            delete_button.innerText = 'Remove Exercise';
+            delete_button.onclick = (event) => {
+                event.preventDefault();
+                remove_exercise(id);
+            }
+            div_form.querySelector('div.row').insertAdjacentElement("afterend", delete_button);
         }
-        div_form.querySelector('div.row').insertAdjacentElement("afterend", delete_button);
         fetch('/exercises/info/'+id)
         .then(response => response.json())
         .then(data => {
@@ -554,6 +566,8 @@ function add_exercise(id, action='POST'){
     });
     fetch(url+id,{
         method: action,
+        headers: {'X-CSRFToken': csrftoken},
+        mode: 'same-origin',
         body: JSON.stringify({
             series: document.querySelector('#series').value,
             reps: document.querySelector('#reps').value,
@@ -578,7 +592,9 @@ function remove_exercise(id){
 
 function upload_track(id, val_series, val_reps){
     fetch('/exercises/track/'+id, {
-        method: 'PUT',
+        method: 'POST',
+        headers: {'X-CSRFToken': csrftoken},
+        mode: 'same-origin',
         body: JSON.stringify({
             series: val_series,
             reps: val_reps

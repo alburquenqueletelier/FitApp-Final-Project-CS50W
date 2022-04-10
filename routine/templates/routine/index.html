@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block body %}
-
+    {% csrf_token %}
     <div class="container-fluid">
         <div id="div_index" class="page px-5">
             <p>
@@ -60,7 +60,6 @@
             </form>
         </div>
     </div>
-    {{ request.user.username|json_script:"request_user" }}
 {% endblock %}
 {% block scripts %}
 <script src="{% static 'routine/javascript.js' %}"></script>
