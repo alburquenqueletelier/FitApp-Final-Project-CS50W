@@ -8,13 +8,14 @@ from .models import *
 from django.contrib.auth import authenticate, login, logout
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
-from django.views.decorators.csrf import csrf_exempt, csrf_protect
+from django.views.decorators.csrf import ensure_csrf_cookie, csrf_protect
 
 ######################################################################################
 ##################################### ONLY VIEWS #####################################
 ######################################################################################
 
 # Principal view
+@ensure_csrf_cookie
 def index(request):
     return render(request, "routine/index.html")
 
@@ -119,13 +120,15 @@ def add_exercise(request, id):
         )
     except AssertionError as error:
         return JsonResponse({"error": error}, status=400)
-    
+
     # Add selected days of workout
     if days:
         for day in days:
             d = Day_week.objects.get(name=day)
             box_exercise.day.add(d)
         box_exercise.save()
+    else:
+        return JsonResponse({"error": "You've to at last mark 1 day"}, status=400)
     
     # Add box exercise to plan
     plan.exercises.add(box_exercise)
@@ -237,7 +240,7 @@ def upload_track(request, id):
     # Create new track for the box exercise that contain the value of series and reps 
     # enter by the user. Every time the user add a result, create a new tracker with
     # the values.
-    tracker = Tracker.objects.create(owner=box_exercise, reps=reps, series=series)
+    tracker = Tracker.objects.create(owner=box_exercise, series=series, reps=reps)
     tracker.save()
     return JsonResponse({'message':'Se actualizo los resultados de tu ejercicio'}, status=201)
 

@@ -25,6 +25,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
 })
 
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
 // Return to the state of the previous page when the back button is pressed
 window.onpopstate = function(event) {
     event.preventDefault;
@@ -35,6 +51,9 @@ window.onpopstate = function(event) {
     load_page(page);
     console.log(page);
 }
+
+// Control the addeventlistener from add form
+var was_submit = false;
 
 //Arrays:
 var lasemana=["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"];
@@ -150,25 +169,16 @@ function load_page(event){
             document.querySelector('#div_my_routine').innerHTML = `
             <h2 class="text-center">Planificación de Rutina</h2>
             <h4 class="text-center">Arma tu rutina ! </h4>
-            <p>Selecciona planificación semanal o mensual. Puedes registrar ambas, te ayudarán a tener mejor control sobre tus entrenamientos. A continuación se presenta el modo de uso: </p>
-            <ol>
-                <li>Selecciona el tipo de planificación (semanal o mensual) para poder editar</li>
-                <del>
-                <li>Escoge el día que quieras entrenar</li>
-                <li>Elige la categoría de musculos a trabajar</li>
-                <li>Selecciona el ejercicio, numero de series y repeticiones</li>
-                <li>Cuando termines de agregar todos los ejercicios dale al boton guardar</li>
-                </del>
-            </ol>
-            <p>De momento solo funciona para ver tu rutina y editar o eliminar los ejercicios actualmente añadidos.</p>
+            <p>Selecciona planificación semanal o mensual. Puedes registrar ambas, te ayudarán a tener mejor control sobre tus entrenamientos.
+            Por el momento solo funciona la opción semanal, que te permite ver tu rutina, editar o remover los ejercicios que tienes añadidos.</p>
             <p> 
             Si quieres <strong> AGREGAR más ejercicios </strong> debes hacerlo en la pestaña de ejercicios.
-            Para ello, realiza el paso 1 y luego
             </p>
             <ol>
                 <li>Selecciona el ejercicio que quieras modificar o eliminar</li>
-                <li>Modifica la información del formulario si quieres editar</li>
-                <li>Para eliminar puedes descarmar todos los días y enviar o presionar el boton remover ejercicio</li>
+                <li>Modifica la información del formulario si quieres editar la rutina para ese ejercicio</li>
+                <li>Para eliminar puedes desmarcar todos los días y enviar el formulario o presionar el boton remover ejercicio</li>
+                <li>Cada acción que modifique el plan de la rutina genera una alerta indicando que fue exitoso el cambio.</li>
             </ol>
             <div class="row justify-content-center"">
                 <div class="col-auto">
@@ -177,8 +187,6 @@ function load_page(event){
                 <div class="col-auto">
                     <button id="month" onclick="load_plan('month')">Mensual</button>
                 </div>
-            </div>
-            <div id="calendario" class="m-2">
             </div>
             `
             break;
@@ -209,12 +217,13 @@ function load_page(event){
                                 <th>All register</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody class="bg-info">
                         </tbody>
                     </table>
                 `;
                 var tbody = div_tracker.querySelector('#table_tracker');
                 tbody = tbody.querySelector('tbody');
+                tbody.style.background = 'rgb(150,10,230)';
                 // Load the info to the Table
                 data.exercises.forEach(exercise => {
                     // console.log(data);
@@ -259,13 +268,13 @@ function load_page(event){
                                 // Create a form to add a series record. 
                                 // It only allows sending information if the rep form is with information and vice versa
                                 td.innerHTML = `
-                                    <form class="form-inline series">
+                                    <form id="series_${exercise.exercise.id}" class="form-inline series">
                                         <div class="form-group row">
                                             <div class="col">
                                                 <input required class="form-control" type="number">
                                             </div>
                                             <div class="col">
-                                                <input class="form-control" type="submit" value="Save">
+                                                <input class="form-control" type="button" value="Save">
                                             </div>
                                         </div>
                                         <input type="hidden" name="id_exercise" value="${exercise.exercise.id}">
@@ -275,13 +284,13 @@ function load_page(event){
                             case 6:
                                 // Create a form to add a reps record. 
                                 td.innerHTML = `
-                                <form class="form-inline reps">
+                                <form id="reps_${exercise.exercise.id}" class="form-inline reps">
                                     <div class="form-group row">
                                         <div class="col">
                                             <input required class="form-control" type="number">
                                         </div>
                                         <div class="col">
-                                            <input class="form-control" type="submit" value="Save">
+                                            <input class="form-control" type="button" value="Save">
                                         </div>
                                     </div>
                                     <input type="hidden" name="id_exercise" value="${exercise.exercise.id}">
@@ -306,23 +315,44 @@ function load_page(event){
                 div_results.appendChild(div_tracker);
                 // Handling of forms. Conditions are added here
                 all_forms = div_results.querySelectorAll('form');
+                count = 0;
                 all_forms.forEach(form => {
                     form.addEventListener('submit', (event) => {
                         event.preventDefault();
-                        if (form.querySelector('input').value <= 0 || form.querySelector('input').value <= 0){
-                            alert('error: series and reps must be greater than 0');
-                            return false;
+                        // forms series are render by par index
+                        search = form.id
+                        search = search.substring(search.indexOf('_')+1,);
+                        if (count%2==0){
+                            rep_form = div_results.querySelector(`#reps_${search}`)
+                            if (form.querySelector('input').value <= 0 || rep_form.querySelector('input').value <= 0){
+                                alert('error: series and reps must be greater than 0');
+                                return false;
+                            }
+                            if (form.querySelector('input').type != 'number' || rep_form.querySelector('input').type != 'number'){
+                                alert('error: series and reps must be numeric');
+                                return false;
+                            }
+                            value_series = form.querySelector('input').value;
+                            value_reps = rep_form.querySelector('input').value;
+                        } else {
+                            // Forms reps are render by impar index
+                            serie_form = div_results.querySelector(`#series_${search}`)
+                            if (form.querySelector('input').value <= 0 || serie_form.querySelector('input').value <= 0){
+                                alert('error: series and reps must be greater than 0');
+                                return false;
+                            }
+                            if (form.querySelector('input').type != 'number' || serie_form.querySelector('input').type != 'number'){
+                                alert('error: series and reps must be numeric');
+                                return false;
+                            }
+                            value_series = serie_form.querySelector('input').value;
+                            value_reps = form.querySelector('input').value;
                         }
-                        if (form.querySelector('input').type != 'number' || form.querySelector('input').type != 'number'){
-                            alert('error: series and reps must be numeric');
-                            return false;
-                        }
-                        value_series = form.querySelector('input').value;
-                        value_reps = form.querySelector('input').value;
                         id_exercise = form.querySelector('input[name="id_exercise"]').value;
                         upload_track(id_exercise, value_series, value_reps);
                         return false;
                     })
+                    count+=1;
                 })
             })
             .catch(error => console.log(error))
@@ -352,13 +382,14 @@ function load_page(event){
 
 // Load weekly or monthly calendar as appropriate
 function load_plan(data) {
-
-    div_calendario = document.querySelector('#calendario');
+    
+    div_calendario = document.createElement('div');
+    div_calendario.id = 'calendario';
+    div_calendario.className = 'table-responsive';
     switch (data){
         // Load Weekly Calendar
         case 'week':
             div_calendario.innerHTML = `
-            <div class="table-responsive">
                 <table id="week_days" class="table table-bordered">
                     <thead>
                         <tr id="week_head" class="table-success text-center">
@@ -383,15 +414,23 @@ function load_plan(data) {
                         </tr>
                     </tbody>
                 </table>
-            </div>
             `;
-            week_info();
+            if (!document.querySelector('#calendario')){
+                div = document.querySelector('#div_my_routine');
+                div.appendChild(div_calendario);
+                // div.querySelector('div.row').insertAdjacentElement("afterend", div_calendario);
+                week_info();
+            }
             break;
      
         case 'month':
             // Load monthly calendar
             // currently under construction
             div_calendario.innerHTML = '<h1>Esta sección esta en desarrollo!</h1>';
+            if (!document.querySelector('#calendario')){
+                div = document.querySelector('#div_my_routine');
+                div.appendChild(div_calendario);
+            }
             break;
     }
 }
@@ -438,8 +477,6 @@ function week_info(){
 function menu_to_add(id, action='POST'){
     // Crea div contenedor del form
     let div_form = document.querySelector("#myForm");
-    // Boton submit que se añade al final
-    let submit = div_form.querySelector('#submit_form');
     if (div_form.style.display == 'none'){
         if (document.querySelector(`#heading${id}`)){
             div_form.querySelector('h1').innerHTML = `Add <strong id="form-add-h1">${document.querySelector(`#heading${id}`).innerText}</strong>`;
@@ -522,19 +559,23 @@ function menu_to_add(id, action='POST'){
         })
     }
     div_form.style.display = "block";
-    submit = div_form.querySelector('form');
+    form = div_form.querySelector('form');
     checkboxes = document.querySelectorAll('input[type="checkbox"]');
     // Se procesa el submit con validación previa.
-    submit.addEventListener('submit', (event) => {
-        event.preventDefault();
-        checkedOne = Array.prototype.slice.call(checkboxes).some(x => x.checked);
-        if (checkedOne){
-            add_exercise(id, action);
-        } else {
-            alert("You must fill at least one day");
-        }
-        return false;
-    });
+    if(!was_submit){
+        form.addEventListener('submit', (event) => {
+            event.preventDefault();
+            checkedOne = Array.prototype.slice.call(checkboxes).some(x => x.checked);
+            if (checkedOne){
+                add_exercise(id, action);
+                form.reset();
+            } else {
+                alert("You must fill at least one day");
+            }
+            was_submit = true;
+            return false;
+        });
+    }
 }
 
 function close_menu_to_add(){
@@ -564,6 +605,8 @@ function add_exercise(id, action='POST'){
             arr.push(dia.value)
         }
     });
+    form = document.querySelector('form');
+    const csrftoken = getCookie('csrftoken');
     fetch(url+id,{
         method: action,
         headers: {'X-CSRFToken': csrftoken},
@@ -591,6 +634,7 @@ function remove_exercise(id){
 }
 
 function upload_track(id, val_series, val_reps){
+    const csrftoken = getCookie('csrftoken');
     fetch('/exercises/track/'+id, {
         method: 'POST',
         headers: {'X-CSRFToken': csrftoken},

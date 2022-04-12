@@ -57,7 +57,7 @@ class Day_week(models.Model):
 class Box_exercise(models.Model):
 
     owner = models.ForeignKey(User, on_delete=models.CASCADE)
-    exercise = models.OneToOneField(Exercise, on_delete=models.CASCADE)
+    exercise = models.ForeignKey(Exercise, on_delete=models.CASCADE)
     reps = models.IntegerField(blank=True, validators=[MinValueValidator(1,'Enter # greater than 0'), MaxValueValidator(100,'Enter # less than 100')])
     series = models.IntegerField(blank=True, validators=[MinValueValidator(1,'Enter # greater than 0'), MaxValueValidator(30,'Enter # less than 30')])
     day = models.ManyToManyField(Day_week, blank=True, related_name="onday")

@@ -2,11 +2,10 @@
 {% load static %}
 
 {% block body %}
-    {% csrf_token %}
-    <div class="container-fluid">
+    
         <div id="div_index" class="page px-5">
             <p>
-                Bienvenido a la aplicación <strong>CaliRoad</strong>, plataforma que te permitirá conocer los ejercicios de la Calistenia,
+                Bienvenido <strong>{{ user.username }}</strong> a la aplicación <strong>CaliRoad</strong>, plataforma que te permitirá conocer los ejercicios de la Calistenia,
                 armar y planificar tus entrenamientos semanales, registrar tus resultados y compartirlos con
                 los demás usuarios. Desarrolla tu potencial en compañia de otros y disfruta del proceso ! ∩▂∩
             </p>
@@ -48,6 +47,7 @@
 
         <div class="form-popup form-group page" id="myForm">
             <form class="form-container">
+                {% csrf_token %}
                 <h1></h1>
                 <div class="row mt-1">
                     <div class="col">
@@ -59,7 +59,6 @@
                 </div>
             </form>
         </div>
-    </div>
 {% endblock %}
 {% block scripts %}
 <script src="{% static 'routine/javascript.js' %}"></script>
