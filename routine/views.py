@@ -142,8 +142,8 @@ def edit_exercise(request, id):
         return JsonResponse({"error": "PUT request required."}, status=400)
     # Load User and exercise info
     user = User.objects.get(username = request.user)
-    exercise = Exercise.objects.get(id=id)
-    box_exercise = Box_exercise.objects.get(owner=user, exercise=exercise)
+    # exercise = Exercise.objects.get(id=id)
+    box_exercise = Box_exercise.objects.get(id=id)
     plan = Plan.objects.get(owner = user)
     # load received data packet
     data_post = json.loads(request.body)
@@ -174,8 +174,8 @@ def remove_exercise(request, id):
         return JsonResponse({"error": "POST request required."}, status=400) 
     # Load user and exercise info
     user = User.objects.get(username = request.user)
-    exercise = Exercise.objects.get(id=id)
-    box_exercise = Box_exercise.objects.get(owner=user, exercise=exercise)
+    # exercise = Exercise.objects.get(id=id)
+    box_exercise = Box_exercise.objects.get(id=id)
     plan = Plan.objects.get(owner = user)
     # Remove and delete box exercise from de plan
     plan.exercises.remove(box_exercise)
@@ -189,8 +189,8 @@ def info_exercise(request, id):
     if request.method != 'GET':
         return JsonResponse({"error": "Bad Request"}, status=400)
     
-    exercise = Exercise.objects.get(id=id)
-    box_exercise = Box_exercise.objects.get(owner=request.user, exercise=exercise)
+    # exercise = Exercise.objects.get(id=id)
+    box_exercise = Box_exercise.objects.get(id=id)
     return JsonResponse(box_exercise.serialize())
 
 # API to load planning exercises
@@ -234,9 +234,9 @@ def upload_track(request, id):
     series = data_put.get('series')
     reps = data_put.get('reps')
 
-    exercise = Exercise.objects.get(id=id)
+    # exercise = Exercise.objects.get(id=id)
     user = request.user
-    box_exercise = Box_exercise.objects.get(owner=user, exercise=exercise)
+    box_exercise = Box_exercise.objects.get(id=id)
     # Create new track for the box exercise that contain the value of series and reps 
     # enter by the user. Every time the user add a result, create a new tracker with
     # the values.

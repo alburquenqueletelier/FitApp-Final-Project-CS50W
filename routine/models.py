@@ -68,6 +68,7 @@ class Box_exercise(models.Model):
 
     def serialize(self):
         return {
+            "id": self.id,
             "owner":self.owner.serialize(),
             "exercise":self.exercise.serialize(),
             "reps":self.reps,
@@ -87,7 +88,7 @@ class Tracker(models.Model):
 
     def serialize(self):
         return {
-            "owner" : self.owner.exercise.name,
+            "owner" : self.owner.id,
             "reps" : self.reps,
             "series" : self.series,
             "date" : self.register_date

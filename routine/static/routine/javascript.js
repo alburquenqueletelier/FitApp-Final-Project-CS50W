@@ -18,12 +18,39 @@ document.addEventListener('DOMContentLoaded', () => {
             })
         } 
     })
-
+    
     // By defautl load index
     document.querySelector('#index').click();
     history.pushState({state:'index'}, 'index', 'index');
 
+    // Add even listener to Add exercise Form
+    div_form = document.querySelector('#myForm');
+    form = div_form.querySelector('form');
+    // Se procesa el submit con validación previa.
+    form.addEventListener('submit', (event) => {
+        event.preventDefault();
+        checkboxes = document.querySelectorAll('input[type="checkbox"]');
+        checkedOne = Array.prototype.slice.call(checkboxes).some(x => x.checked);
+        if (checkedOne){
+            add_exercise(id, action);
+            form.reset();
+        } else {
+            alert("You must fill at least one day");
+        }
+        return false;
+    });
+    
 })
+
+// Function to generate random number to use in color rgb
+function generarNumero(numero){
+	return (Math.random()*numero).toFixed(0);
+}
+// Generate rgb color random
+function colorRGB(){
+	var coolor = "("+generarNumero(255)+"," + generarNumero(255) + "," + generarNumero(255) +")";
+	return "rgb" + coolor;
+}
 
 function getCookie(name) {
     let cookieValue = null;
@@ -89,7 +116,7 @@ function load_page(event){
                 div_accordion.id = 'accordionexercises';
                 div_accordion.className = 'accordion';
                 menu.forEach(exercise => {
-                    console.log(exercise.imagen);
+                    // console.log(exercise.imagen);
                     const div = document.createElement('div');
                     div.className = 'accordion-item';
                     div.innerHTML = `
@@ -133,34 +160,34 @@ function load_page(event){
             // Load plan user info with fetch
             // If the exercise is already added, the button is changed to edit
              // and add button to remove exercise.
-            if (request_user){
-                fetch('/plan', {
-                    method: 'GET'
-                })
-                .then(response => response.json())
-                .then(data => {
-                    add_buttons = document.querySelectorAll('button.btn-primary');
-                    add_buttons.forEach(button => {
-                        data.exercises.forEach(exercise => {
-                            if(exercise.exercise.name == button.dataset.name){
-                                button.removeAttribute("onclick");
-                                button.innerText = 'Edit exercise';
-                                button.className = 'btn btn-warning mt-2 me-2';
-                                button.onclick = () => menu_to_add(button.dataset.id, 'PUT');
-                                remove_button = document.createElement('button');
-                                remove_button.id = `remove_button${exercise.exercise.id}`;
-                                remove_button.className = 'btn btn-danger mt-2';
-                                remove_button.innerText = 'Remove exercise';
-                                remove_button.onclick = () => remove_exercise(button.dataset.id);
-                                button.insertAdjacentElement("afterend", remove_button);
-                            }
-                        })
-                    });
-                })
-                .catch(error => {
-                    console.log(error, request_user);
-                })
-            }
+            // if (request_user){
+            //     fetch('/plan', {
+            //         method: 'GET'
+            //     })
+            //     .then(response => response.json())
+            //     .then(data => {
+            //         add_buttons = document.querySelectorAll('button.btn-primary');
+            //         add_buttons.forEach(button => {
+            //             data.exercises.forEach(exercise => {
+            //                 if(exercise.exercise.name == button.dataset.name){
+            //                     button.removeAttribute("onclick");
+            //                     button.innerText = 'Edit exercise';
+            //                     button.className = 'btn btn-warning mt-2 me-2';
+            //                     button.onclick = () => menu_to_add(button.dataset.id, 'PUT');
+            //                     remove_button = document.createElement('button');
+            //                     remove_button.id = `remove_button${exercise.exercise.id}`;
+            //                     remove_button.className = 'btn btn-danger mt-2';
+            //                     remove_button.innerText = 'Remove exercise';
+            //                     remove_button.onclick = () => remove_exercise(button.dataset.id);
+            //                     button.insertAdjacentElement("afterend", remove_button);
+            //                 }
+            //             })
+            //         });
+            //     })
+            //     .catch(error => {
+            //         console.log(error, request_user);
+            //     })
+            // }
             break;
         // Generate planning page
         case 'my_routine':
@@ -243,7 +270,7 @@ function load_page(event){
                             case 3:
                                 info_series = new Object();
                                 data.tracker.forEach(track => {
-                                    if(exercise.exercise.name == track.owner){
+                                    if(exercise.id == track.owner){
                                         info_series[`${exercise.exercise.name}`] = track.series;
                                     } 
                                 })
@@ -255,7 +282,7 @@ function load_page(event){
                             case 4:
                                 info_reps = new Object();
                                 data.tracker.forEach(track => {
-                                    if(exercise.exercise.name == track.owner){
+                                    if(exercise.id == track.owner){
                                         info_reps[`${exercise.exercise.name}`] = track.reps;
                                     } 
                                 })
@@ -274,10 +301,10 @@ function load_page(event){
                                                 <input required class="form-control" type="number">
                                             </div>
                                             <div class="col">
-                                                <input class="form-control" type="button" value="Save">
+                                                <input class="form-control" type="submit" value="Save">
                                             </div>
                                         </div>
-                                        <input type="hidden" name="id_exercise" value="${exercise.exercise.id}">
+                                        <input type="hidden" name="id_exercise" value="${exercise.id}">
                                     </form>
                                 `;
                                 break;
@@ -290,10 +317,10 @@ function load_page(event){
                                             <input required class="form-control" type="number">
                                         </div>
                                         <div class="col">
-                                            <input class="form-control" type="button" value="Save">
+                                            <input class="form-control" type="submit" value="Save">
                                         </div>
                                     </div>
-                                    <input type="hidden" name="id_exercise" value="${exercise.exercise.id}">
+                                    <input type="hidden" name="id_exercise" value="${exercise.id}">
                                 </form>
                                 `;
                                 break;
@@ -441,24 +468,29 @@ function week_info(){
     })
     .then(response =>response.json())
     .then(data => {
-        // console.log(data);
+        console.log(data);
         tr = document.querySelector('#dias');
         dias_info = tr.querySelectorAll('td');
         let i = 0;
+        color = new Object();
         dias_info.forEach(celda => {
             let lista = document.createElement('ol');
             data.exercises.forEach(exercise => {
+                if (!color[`${exercise.id}`]){
+                    color[`${exercise.id}`] = colorRGB();
+                }
+                // console.log(exercise);
                 if (exercise.day.includes(diassemana[i])){
                     li = document.createElement('li');
                     li.className = 'list_exercises';
+                    li.style.color = color[`${exercise.id}`];
                     li.innerHTML = `
-                    <button  class="no-button" onclick="menu_to_add(${exercise.exercise.id}, 'PUT')">
-                    <p id="p${exercise.exercise.id}" class='close'><strong>${exercise.exercise.name}</strong></p>
+                    <button  style="color: ${color[`${exercise.id}`]}" class="no-button" onclick="menu_to_add(${exercise.id}, 'PUT')">
+                        <p id="p${exercise.id}" class='close';"><strong>${exercise.exercise.name}</strong></p>
                     </button>
                     <p class='close'>Series: ${exercise.series}</p>
                     <p class='close'>Reps: ${exercise.reps}</p>
                     `;
-                    celda.className = 'bg-info';
                     lista.appendChild(li);
                     celda.appendChild(lista);
                 }
@@ -559,28 +591,12 @@ function menu_to_add(id, action='POST'){
         })
     }
     div_form.style.display = "block";
-    form = div_form.querySelector('form');
-    checkboxes = document.querySelectorAll('input[type="checkbox"]');
-    // Se procesa el submit con validación previa.
-    if(!was_submit){
-        form.addEventListener('submit', (event) => {
-            event.preventDefault();
-            checkedOne = Array.prototype.slice.call(checkboxes).some(x => x.checked);
-            if (checkedOne){
-                add_exercise(id, action);
-                form.reset();
-            } else {
-                alert("You must fill at least one day");
-            }
-            was_submit = true;
-            return false;
-        });
-    }
 }
 
 function close_menu_to_add(){
     div_form = document.querySelector('#myForm');
     form = div_form.querySelector('form');
+    form.reset();
     div_inputs = form.querySelector('#div_inputs');
     form.removeChild(div_inputs);
     delete_check = form.querySelectorAll('div.form-check');

@@ -15,7 +15,10 @@ a{
   font-weight: bolder;
 }
 
-
+table ol {
+  list-style-position: inside;
+  padding: 0;
+}
 
 img.img-responsive{
   max-height: 100px;
@@ -66,7 +69,7 @@ button.no-button{
 }
 
 p.close {
-  line-height: 50%;
+  margin: 0;
 }
 
 /* Add styles to the form container */

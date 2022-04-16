@@ -122,6 +122,9 @@ There are some known bugs that I haven't been able to fix yet:
 3. If an exercise is loaded without a video and/or without an image, when loading the exercise section it throws the 404 error. It does not affect the functionality, so I have not yet paid attention to correcting it
 4. It is assumed that if a user modifies an exercise of his routine without indicating any day, it should be eliminated when calling the corresponding function. However, this occurs with an error.
 5. There is a bug in the results section when the form is submitted with the reps column button. If it is valid, the information is sent and the new tracking of the exercise results is generated, but the value of the reps is copied to the series. For now, this error can be avoided by submitting the form with the button in the series column.
+6. There is a bug when adding more than one exercise without refreshing the page. This causes the request to add the new exercise to be sent, but an entry for the old exercise is generated with the new values.
+7. There is a bug when you want to remove more than one exercise from the routine without refreshing the page from the browser. If you perform the action to delete a second exercise, a 500 error is generated because a signal with the id of the previous exercise is sent. This along with the previous error are caused by the same thing but the problem is still not solved.
+
 
 There must be errors associated with accidentally deleting information from the starting configuration, among others, as well as some vulnerabilities that have not been covered or that simply happened to me. I would be grateful if they could be indicated. Any constructive criticism, recommendation or contribution is welcome.
 
