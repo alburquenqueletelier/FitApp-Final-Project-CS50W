@@ -31,6 +31,8 @@ document.addEventListener('DOMContentLoaded', () => {
         event.preventDefault();
         checkboxes = document.querySelectorAll('input[type="checkbox"]');
         checkedOne = Array.prototype.slice.call(checkboxes).some(x => x.checked);
+        id=form.querySelector('input[name="exercise_id"]').value;
+        action=form.querySelector('input[name="action_value"]').value;
         if (checkedOne){
             add_exercise(id, action);
             form.reset();
@@ -535,6 +537,15 @@ function menu_to_add(id, action='POST'){
         label_reps.innerText = 'N° Repeticiones';
         label_reps.htmlFor = 'reps';
         label_reps.className = 'form-check-label';
+        // Añade input escondido con id exercise y action
+        id_hidden = document.createElement('input');
+        id_hidden.setAttribute('type', 'hidden');
+        id_hidden.setAttribute("name", "exercise_id");
+        id_hidden.setAttribute("value", id);
+        id_action = document.createElement('input');
+        id_action.setAttribute('type', 'hidden');
+        id_action.setAttribute("name", "action_value");
+        id_action.setAttribute("value", action);
         // Se añade inputs y etiquetas a nuevo div que se integra al formulario
         div_inputs = document.createElement('div');
         div_inputs.id = 'div_inputs';
@@ -542,6 +553,8 @@ function menu_to_add(id, action='POST'){
         div_inputs.appendChild(series);
         div_inputs.appendChild(label_reps);
         div_inputs.appendChild(reps);
+        div_inputs.appendChild(id_hidden);
+        div_inputs.appendChild(id_action);
         div_form.querySelector('form').insertBefore(div_inputs, div_form.querySelector('div.row'));
         // Crea los checkbox para seleccionar dias
         diassemana.forEach(dia => {
